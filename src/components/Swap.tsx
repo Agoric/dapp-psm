@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion';
-import CustomLoader from 'components/CustomLoader';
+import { FiRepeat } from 'react-icons/fi';
 import clsx from 'clsx';
+
+import SectionSwap from 'components/SectionSwap';
+import CustomLoader from 'components/CustomLoader';
 
 const Swap = () => {
   const assetsLoaded = false;
@@ -19,7 +22,35 @@ const Swap = () => {
       <motion.div className="flex justify-between items-center gap-8 " layout>
         <h1 className="text-2xl font-semibold text-slate-800">PSM Exchange</h1>
       </motion.div>
-      {!assetsLoaded ? <CustomLoader text="Waiting for wallet..." /> : <></>}
+      {!assetsLoaded ? (
+        <CustomLoader text="Waiting for wallet..." />
+      ) : (
+        <motion.div
+          className="flex flex-col gap-4 relative"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          layout
+        >
+          <div className="flex flex-col gap-4 relative">
+            <SectionSwap
+              type="from"
+              value={fromAmount?.value}
+              handleChange={handleFromValueChange}
+            />
+            <FiRepeat
+              className="transform rotate-90 p-1 bg-alternative absolute left-6 position-swap-icon cursor-pointer hover:bg-alternativeDark z-20 border-4 border-white box-border"
+              size="30"
+              onClick={switchToAndFrom}
+            />
+          </div>
+          <SectionSwap
+            type="to"
+            value={toAmount?.value}
+            handleChange={handleToValueChange}
+          />
+        </motion.div>
+      )}
       <motion.button
         className={clsx(
           'flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-xl font-medium p-3  uppercase',
