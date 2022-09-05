@@ -6,24 +6,34 @@ import {
   floorDivideBy,
 } from '@agoric/zoe/src/contractSupport';
 import { Amount, AmountMath } from '@agoric/ertp';
+import type { Id as ToastId, ToastOptions } from 'react-toastify';
 
 import {
   displayFunctionsAtom,
   governedParamsAtom,
   metricsAtom,
   stableBrandAtom,
+  pursesAtom,
 } from 'store/app';
+import { filterPursesByBrand } from 'utils/helpers';
 
 export const Errors = {
   IN_PROGRESS: 'Swap in progress.',
-  SLIPPAGE: 'Slippage must be between 0.1 and 5 percent.',
   EMPTY_AMOUNTS: 'Please enter the amounts first.',
   NO_BRANDS: 'Please select the assets first.',
-  NO_PURSES: 'Please select the purses first.',
 } as const;
 
-export const defaultToastProperties = {
-  position: 'top-right',
+export const ButtonStatuses = {
+  SWAP: 'Swap',
+  SWAPPED: 'Swapped',
+  REJECTED: 'Rejected',
+  DECLINED: 'Declined',
+};
+
+export type SwapButtonStatus = string;
+
+export const defaultToastProperties: ToastOptions = {
+  position: 'bottom-right',
   autoClose: 3000,
   hideProgressBar: false,
   closeOnClick: true,
@@ -37,13 +47,33 @@ export const SwapDirection = {
   TO_ANCHOR: 'TO_ANCHOR',
 } as const;
 
-type SwapDirectionValue = keyof typeof SwapDirection;
-type SwapError = keyof typeof Errors;
+export type SwapDirectionValue = keyof typeof SwapDirection;
+export type SwapError = string;
 
 // TODO: Support multiple anchors.
 export const anchorBrandAtom = atom(
   get => get(metricsAtom)?.anchorPoolBalance?.brand
 );
+
+export const fromPurseAtom = atom(get => {
+  const direction = get(swapDirectionAtom);
+  const fromBrand =
+    direction === SwapDirection.TO_ANCHOR
+      ? get(stableBrandAtom)
+      : get(anchorBrandAtom);
+  const purses = get(pursesAtom);
+  return purses && fromBrand && filterPursesByBrand(purses, fromBrand)?.at(0);
+});
+
+export const toPurseAtom = atom(get => {
+  const direction = get(swapDirectionAtom);
+  const toBrand =
+    direction === SwapDirection.TO_STABLE
+      ? get(stableBrandAtom)
+      : get(anchorBrandAtom);
+  const purses = get(pursesAtom);
+  return purses && toBrand && filterPursesByBrand(purses, toBrand)?.at(0);
+});
 
 const anchorUnitAmountAtom = atom(get => {
   const anchorBrand = get(anchorBrandAtom);
@@ -182,9 +212,9 @@ export const swapDirectionAtom = atom(
   }
 );
 
-export const toastIdAtom = atom<number | null>(null);
+export const toastIdAtom = atom<ToastId | null>(null);
 export const currentOfferIdAtom = atom<number | null>(null);
-export const swapButtonStatusAtom = atom<number | null>(null);
+export const swapButtonStatusAtom = atom<SwapButtonStatus>(ButtonStatuses.SWAP);
 export const swapInProgressAtom = atom<boolean>(false);
 
 const errorsInnerAtom = atom<Set<SwapError>>(new Set<SwapError>());

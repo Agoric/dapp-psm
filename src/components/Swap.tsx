@@ -1,29 +1,65 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiRepeat } from 'react-icons/fi';
+import { FiRepeat, FiCheck } from 'react-icons/fi';
+import { BiErrorCircle } from 'react-icons/bi';
 import clsx from 'clsx';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { toast } from 'react-toastify';
+import { Oval } from 'react-loader-spinner';
 
 import SectionSwap, { SectionSwapType } from 'components/SectionSwap';
 import ExtraInformation from 'components/ExtraInformation';
 import CustomLoader from 'components/CustomLoader';
-import { brandToInfoAtom, governedParamsAtom, metricsAtom } from 'store/app';
-import { useAtom, useAtomValue } from 'jotai';
+import {
+  brandToInfoAtom,
+  governedParamsAtom,
+  instanceIdAtom,
+  metricsAtom,
+  offersAtom,
+  walletAtom,
+} from 'store/app';
 import {
   fromAmountAtom,
   SwapDirection,
   swapDirectionAtom,
   toAmountAtom,
+  toastIdAtom,
+  swapInProgressAtom,
+  currentOfferIdAtom,
+  addErrorAtom,
+  fromPurseAtom,
+  toPurseAtom,
+  removeErrorAtom,
+  Errors,
+  swapButtonStatusAtom,
+  defaultToastProperties,
+  ButtonStatuses,
+  errorsAtom,
 } from 'store/swap';
+import { doSwap } from 'services/swap';
 
 const Swap = () => {
   const brandToInfo = useAtomValue(brandToInfoAtom);
   const metrics = useAtomValue(metricsAtom);
   const governedParams = useAtomValue(governedParamsAtom);
-  const assetsLoaded = brandToInfo.size && metrics && governedParams;
-
   const fromAmount = useAtomValue(fromAmountAtom);
   const toAmount = useAtomValue(toAmountAtom);
   const [swapDirection, setSwapDirection] = useAtom(swapDirectionAtom);
+  const [toastId, setToastId] = useAtom(toastIdAtom);
+  const [swapped, setSwapped] = useAtom(swapInProgressAtom);
+  const [currentOfferId, setCurrentOfferId] = useAtom(currentOfferIdAtom);
+  const errors = useAtomValue(errorsAtom);
+  const addError = useSetAtom(addErrorAtom);
+  const removeError = useSetAtom(removeErrorAtom);
+  const instanceId = useAtomValue(instanceIdAtom);
+  const walletP = useAtomValue(walletAtom);
+  const fromPurse = useAtomValue(fromPurseAtom);
+  const toPurse = useAtomValue(toPurseAtom);
+  const offers = useAtomValue(offersAtom);
+  const [swapButtonStatus, setSwapButtonStatus] = useAtom(swapButtonStatusAtom);
+
+  const assetsLoaded =
+    brandToInfo.size && metrics && governedParams && instanceId;
 
   const switchToAndFrom = useCallback(() => {
     if (swapDirection === SwapDirection.TO_ANCHOR) {
@@ -34,8 +70,119 @@ const Swap = () => {
   }, [swapDirection, setSwapDirection]);
 
   const handleSwap = useCallback(() => {
-    console.log('TODO handle swap', fromAmount, toAmount);
-  }, [fromAmount, toAmount]);
+    if (!assetsLoaded) return;
+
+    const fromValue = fromAmount?.value;
+    const toValue = toAmount?.value;
+
+    doSwap({
+      setToastId,
+      setSwapped,
+      setCurrentOfferId,
+      addError,
+      swapped,
+      instanceId,
+      walletP,
+      fromPurse,
+      fromValue,
+      toPurse,
+      toValue,
+      swapDirection,
+    });
+  }, [
+    setCurrentOfferId,
+    setSwapped,
+    setToastId,
+    addError,
+    assetsLoaded,
+    fromAmount?.value,
+    fromPurse,
+    instanceId,
+    swapDirection,
+    swapped,
+    toAmount?.value,
+    toPurse,
+    walletP,
+  ]);
+
+  useEffect(() => {
+    removeError(Errors.EMPTY_AMOUNTS);
+  }, [fromAmount, toAmount, removeError]);
+
+  useEffect(() => {
+    if (fromPurse && toPurse) {
+      removeError(Errors.NO_BRANDS);
+    }
+  }, [toPurse, fromPurse, removeError]);
+
+  useEffect(() => {
+    if (!swapped) {
+      removeError(Errors.IN_PROGRESS);
+    }
+  }, [swapped, removeError]);
+
+  useEffect(() => {
+    if (swapped && offers && toastId) {
+      const currentOffer = offers.find(
+        ({ id, rawId }) => rawId === currentOfferId || id === currentOfferId
+      );
+      const swapStatus = currentOffer?.status;
+      if (swapStatus === 'accept') {
+        setSwapButtonStatus(ButtonStatuses.SWAPPED);
+        toast.update(toastId, {
+          render: 'Tokens successfully swapped',
+          type: toast.TYPE.SUCCESS,
+          ...defaultToastProperties,
+        });
+        setToastId(null);
+      } else if (swapStatus === 'decline') {
+        setSwapButtonStatus(ButtonStatuses.DECLINED);
+        toast.update(toastId, {
+          render: 'Swap offer declined',
+          type: toast.TYPE.ERROR,
+          ...defaultToastProperties,
+        });
+        setToastId(null);
+      } else if (currentOffer?.error) {
+        setSwapButtonStatus(ButtonStatuses.REJECTED);
+        toast.update(toastId, {
+          render: 'Swap offer rejected by contract',
+          type: toast.TYPE.WARNING,
+          ...defaultToastProperties,
+        });
+        setToastId(null);
+      }
+      if (
+        swapStatus === 'accept' ||
+        swapStatus === 'decline' ||
+        currentOffer?.error
+      ) {
+        setCurrentOfferId(null);
+        setTimeout(() => {
+          setSwapped(false);
+          setSwapButtonStatus(ButtonStatuses.SWAP);
+        }, 3000);
+      }
+    }
+  }, [
+    currentOfferId,
+    offers,
+    setCurrentOfferId,
+    setSwapButtonStatus,
+    setSwapped,
+    setToastId,
+    swapped,
+    toastId,
+  ]);
+
+  const errorsToRender: JSX.Element[] = [];
+  errors.forEach(e => {
+    errorsToRender.push(
+      <motion.h3 key={e} layout className="text-red-600">
+        {e}
+      </motion.h3>
+    );
+  });
 
   return (
     <motion.div
@@ -83,9 +230,23 @@ const Swap = () => {
         onClick={handleSwap}
       >
         <motion.div className="relative flex-row w-full justify-center items-center">
-          <div className="text-white">Swap</div>
+          {swapped && swapButtonStatus === 'Swap' && (
+            <div className="absolute right-0">
+              <Oval color="#fff" height={28} width={28} />
+            </div>
+          )}
+          {swapped && swapButtonStatus === 'Swapped' && (
+            <FiCheck className="absolute right-0" size={28} />
+          )}
+          {swapped &&
+            (swapButtonStatus === 'rejected' ||
+              swapButtonStatus === 'declined') && (
+              <BiErrorCircle className="absolute right-0" size={28} />
+            )}
+          <div className="text-white">{swapButtonStatus}</div>
         </motion.div>
       </motion.button>
+      {errorsToRender}
     </motion.div>
   );
 };

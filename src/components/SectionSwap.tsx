@@ -5,23 +5,17 @@ import { motion } from 'framer-motion';
 import { FiChevronDown } from 'react-icons/fi';
 import { useAtomValue, useAtom } from 'jotai';
 import { AmountMath } from '@agoric/ertp';
+import type { Brand } from '@agoric/ertp';
 
 import CustomInput from 'components/CustomInput';
 import DialogSwap from 'components/DialogSwap';
-import {
-  brandToInfoAtom,
-  displayFunctionsAtom,
-  pursesAtom,
-  stableBrandAtom,
-} from 'store/app';
+import { displayFunctionsAtom } from 'store/app';
 import { displayPetname } from 'utils/displayFunctions';
-import { filterPursesByBrand } from 'utils/helpers';
 import {
-  swapDirectionAtom,
-  SwapDirection,
-  anchorBrandAtom,
   toAmountAtom,
   fromAmountAtom,
+  fromPurseAtom,
+  toPurseAtom,
 } from 'store/swap';
 
 export const SectionSwapType = {
@@ -32,11 +26,8 @@ export const SectionSwapType = {
 const SectionSwap = ({ type }: { type: string }) => {
   const { displayBrandIcon, displayBrandPetname } =
     useAtomValue(displayFunctionsAtom);
-  const brandToInfo = useAtomValue(brandToInfoAtom);
-  const swapDirection = useAtomValue(swapDirectionAtom);
-  const stableBrand = useAtomValue(stableBrandAtom);
-  const anchorBrand = useAtomValue(anchorBrandAtom);
-  const purses = useAtomValue(pursesAtom);
+  const fromPurse = useAtomValue(fromPurseAtom);
+  const toPurse = useAtomValue(toPurseAtom);
   const [toAmount, setToAmount] = useAtom(toAmountAtom);
   const [fromAmount, setFromAmount] = useAtom(fromAmountAtom);
   const [open, setOpen] = useState(false);
@@ -44,18 +35,13 @@ const SectionSwap = ({ type }: { type: string }) => {
   const value =
     type === SectionSwapType.TO ? toAmount?.value : fromAmount?.value;
 
-  const isStable =
-    swapDirection === SwapDirection.TO_STABLE
-      ? type === SectionSwapType.TO
-      : type === SectionSwapType.FROM;
-
   const handleBrandSelected = () => {
-    console.log('TODO: handle brand selected');
+    console.log('TODO: Support multiple anchor brands');
   };
+  const brands: Brand[] = [];
 
-  const brands = [...brandToInfo.keys()];
-  const brand = isStable ? stableBrand : anchorBrand;
-  const purse = brand && purses && filterPursesByBrand(purses, brand).at(0);
+  const purse = type === SectionSwapType.TO ? toPurse : fromPurse;
+  const brand = purse?.brand;
 
   const handleValueChange = (value: bigint) => {
     if (type === SectionSwapType.FROM) {
