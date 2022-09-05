@@ -56,3 +56,5 @@ declare module '@agoric/ui-components' {
   export const stringifyRatioAsPercent;
   export const stringifyRatio;
 }
+
+declare module '@agoric/zoe/src/contractSupport';

@@ -53,7 +53,6 @@ const SectionSwap = ({ type }: { type: string }) => {
     console.log('TODO: handle brand selected');
   };
 
-  // TODO: Filter brands.
   const brands = [...brandToInfo.keys()];
   const brand = isStable ? stableBrand : anchorBrand;
   const purse = brand && purses && filterPursesByBrand(purses, brand).at(0);

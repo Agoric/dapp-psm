@@ -19,7 +19,6 @@ const Swap = () => {
   const brandToInfo = useAtomValue(brandToInfoAtom);
   const metrics = useAtomValue(metricsAtom);
   const governedParams = useAtomValue(governedParamsAtom);
-
   const assetsLoaded = brandToInfo.size && metrics && governedParams;
 
   const fromAmount = useAtomValue(fromAmountAtom);
