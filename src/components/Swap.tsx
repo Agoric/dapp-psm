@@ -1,11 +1,19 @@
+import { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FiRepeat } from 'react-icons/fi';
 import clsx from 'clsx';
 
-import SectionSwap from 'components/SectionSwap';
+import SectionSwap, { SectionSwapType } from 'components/SectionSwap';
+import ExtraInformation from 'components/ExtraInformation';
 import CustomLoader from 'components/CustomLoader';
 import { brandToInfoAtom, governedParamsAtom, metricsAtom } from 'store/app';
-import { useAtomValue } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
+import {
+  fromAmountAtom,
+  SwapDirection,
+  swapDirectionAtom,
+  toAmountAtom,
+} from 'store/swap';
 
 const Swap = () => {
   const brandToInfo = useAtomValue(brandToInfoAtom);
@@ -14,20 +22,21 @@ const Swap = () => {
 
   const assetsLoaded = brandToInfo.size && metrics && governedParams;
 
-  console.log('got data', brandToInfo, metrics, governedParams);
+  const fromAmount = useAtomValue(fromAmountAtom);
+  const toAmount = useAtomValue(toAmountAtom);
+  const [swapDirection, setSwapDirection] = useAtom(swapDirectionAtom);
 
-  // TODO: Handle swap state.
-  const fromAmount: any | undefined = undefined;
-  const toAmount: any | undefined = undefined;
-  const handleToValueChange = () => {
-    console.log('TODO: handle to value change');
-  };
-  const handleFromValueChange = () => {
-    console.log('TODO: handle from value change');
-  };
-  const switchToAndFrom = () => {
-    console.log('TODO: switch to and from');
-  };
+  const switchToAndFrom = useCallback(() => {
+    if (swapDirection === SwapDirection.TO_ANCHOR) {
+      setSwapDirection(SwapDirection.TO_STABLE);
+    } else {
+      setSwapDirection(SwapDirection.TO_ANCHOR);
+    }
+  }, [swapDirection, setSwapDirection]);
+
+  const handleSwap = useCallback(() => {
+    console.log('TODO handle swap', fromAmount, toAmount);
+  }, [fromAmount, toAmount]);
 
   return (
     <motion.div
@@ -41,7 +50,7 @@ const Swap = () => {
       className="flex flex-col p-4 rounded-sm gap-4 w-screen max-w-lg relative select-none overflow-hidden"
     >
       <motion.div className="flex justify-between items-center gap-8 " layout>
-        <h1 className="text-2xl font-semibold text-slate-800">PSM Exchange</h1>
+        <h1 className="text-2xl font-semibold text-slate-800">Stable Swap</h1>
       </motion.div>
       {!assetsLoaded ? (
         <CustomLoader text="Waiting for wallet..." />
@@ -54,24 +63,17 @@ const Swap = () => {
           layout
         >
           <div className="flex flex-col gap-4 relative">
-            <SectionSwap
-              type="from"
-              value={fromAmount?.value}
-              handleChange={handleFromValueChange}
-            />
+            <SectionSwap type={SectionSwapType.FROM} />
             <FiRepeat
               className="transform rotate-90 p-1 bg-alternative absolute left-6 position-swap-icon cursor-pointer hover:bg-alternativeDark z-20 border-4 border-white box-border"
               size="30"
               onClick={switchToAndFrom}
             />
           </div>
-          <SectionSwap
-            type="to"
-            value={toAmount?.value}
-            handleChange={handleToValueChange}
-          />
+          <SectionSwap type={SectionSwapType.TO} />
         </motion.div>
       )}
+      <ExtraInformation />
       <motion.button
         className={clsx(
           'flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-xl font-medium p-3  uppercase',
@@ -79,9 +81,7 @@ const Swap = () => {
             ? 'bg-primary hover:bg-primaryDark text-white'
             : 'text-gray-500'
         )}
-        onClick={() => {
-          console.log('TODO handle swap');
-        }}
+        onClick={handleSwap}
       >
         <motion.div className="relative flex-row w-full justify-center items-center">
           <div className="text-white">Swap</div>

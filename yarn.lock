@@ -201,7 +201,7 @@
     glob "^7.1.6"
     rollup-plugin-string "^3.0.0"
 
-"@agoric/zoe@^0.24.0":
+"@agoric/zoe@0.24.0", "@agoric/zoe@^0.24.0":
   version "0.24.0"
   resolved "https://registry.yarnpkg.com/@agoric/zoe/-/zoe-0.24.0.tgz#383695c6a70dc6ef77b12bbd858567ed2f6bce6a"
   integrity sha512-kT7cDDn2Tvfd1P0Pk+FIcrg2BdzLF9VnQ0hfxHIAQrCN68tHIAPrt9wW3R8T8H1HA6t9bC0CqQGQEo8BrDKblw==

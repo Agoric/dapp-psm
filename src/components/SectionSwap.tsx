@@ -3,41 +3,68 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiChevronDown } from 'react-icons/fi';
-import type { PursesJSONState } from '@agoric/wallet-backend';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useAtom } from 'jotai';
+import { AmountMath } from '@agoric/ertp';
 
 import CustomInput from 'components/CustomInput';
 import DialogSwap from 'components/DialogSwap';
-import { brandToInfoAtom, displayFunctionsAtom } from 'store/app';
+import {
+  brandToInfoAtom,
+  displayFunctionsAtom,
+  pursesAtom,
+  stableBrandAtom,
+} from 'store/app';
 import { displayPetname } from 'utils/displayFunctions';
+import { filterPursesByBrand } from 'utils/helpers';
+import {
+  swapDirectionAtom,
+  SwapDirection,
+  anchorBrandAtom,
+  toAmountAtom,
+  fromAmountAtom,
+} from 'store/swap';
 
-const SectionSwap = ({
-  type,
-  value,
-  handleChange,
-}: {
-  type: string;
-  value: bigint;
-  handleChange: (value: bigint) => void;
-}) => {
+export const SectionSwapType = {
+  FROM: 'FROM',
+  TO: 'TO',
+} as const;
+
+const SectionSwap = ({ type }: { type: string }) => {
   const { displayBrandIcon, displayBrandPetname } =
     useAtomValue(displayFunctionsAtom);
   const brandToInfo = useAtomValue(brandToInfoAtom);
-
+  const swapDirection = useAtomValue(swapDirectionAtom);
+  const stableBrand = useAtomValue(stableBrandAtom);
+  const anchorBrand = useAtomValue(anchorBrandAtom);
+  const purses = useAtomValue(pursesAtom);
+  const [toAmount, setToAmount] = useAtom(toAmountAtom);
+  const [fromAmount, setFromAmount] = useAtom(fromAmountAtom);
   const [open, setOpen] = useState(false);
+
+  const value =
+    type === SectionSwapType.TO ? toAmount?.value : fromAmount?.value;
+
+  const isStable =
+    swapDirection === SwapDirection.TO_STABLE
+      ? type === SectionSwapType.TO
+      : type === SectionSwapType.FROM;
 
   const handleBrandSelected = () => {
     console.log('TODO: handle brand selected');
   };
 
-  const handlePurseSelected = () => {
-    console.log('TODO: handle purse selected');
-  };
-
   // TODO: Filter brands.
   const brands = [...brandToInfo.keys()];
-  const brand = null;
-  const purse: PursesJSONState | null = null;
+  const brand = isStable ? stableBrand : anchorBrand;
+  const purse = brand && purses && filterPursesByBrand(purses, brand).at(0);
+
+  const handleValueChange = (value: bigint) => {
+    if (type === SectionSwapType.FROM) {
+      setFromAmount(AmountMath.make(brand, value));
+    } else {
+      setToAmount(AmountMath.make(brand, value));
+    }
+  };
 
   return (
     <>
@@ -47,7 +74,6 @@ const SectionSwap = ({
         brands={brands}
         selectedBrand={brand}
         handleBrandSelected={handleBrandSelected}
-        handlePurseSelected={handlePurseSelected}
       />
       <motion.div
         className="flex flex-col bg-alternative p-4 rounded-sm gap-2 select-none"
@@ -64,18 +90,18 @@ const SectionSwap = ({
             <div
               className="flex flex-col w-28 hover:bg-black cursor-pointer hover:bg-opacity-5 p-1 rounded-sm"
               onClick={() => {
-                setOpen(true);
+                // TODO: Support multiple anchor brands.
+                false && setOpen(true);
               }}
             >
               <div className="flex  items-center justify-between">
                 <h2 className="text-xl uppercase font-medium">
                   {displayBrandPetname(brand)}
                 </h2>
-                <FiChevronDown className="text-xl" />
+                {false && <FiChevronDown className="text-xl" />}
               </div>
               <h3 className="text-xs text-gray-500 font-semibold">
-                Purse:{' '}
-                <span>{displayPetname(/*purse?.pursePetname ??*/ '')}</span>{' '}
+                Purse: <span>{displayPetname(purse?.pursePetname ?? '')}</span>{' '}
               </h3>
             </div>
           ) : (
@@ -88,10 +114,10 @@ const SectionSwap = ({
           )}
           <CustomInput
             value={value}
-            onChange={handleChange}
+            onChange={handleValueChange}
             brand={brand}
             purse={purse}
-            showMaxButton={type === 'from'}
+            showMaxButton={type === SectionSwapType.FROM}
           />
         </div>
       </motion.div>

@@ -24,6 +24,10 @@ declare module '@agoric/ertp' {
     COPY_SET: 'copySet',
     COPY_BAG: 'copyBag',
   };
+  export type Ratio = {
+    numerator: Amount;
+    denominator: Amount;
+  };
 }
 
 declare module '@agoric/wallet-backend' {
