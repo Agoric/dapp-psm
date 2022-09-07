@@ -123,6 +123,9 @@ export const fromAmountAtom = atom(
     }
 
     // Auto-fill "to" amount when "from" amount is entered.
+    //
+    // TODO(https://github.com/Agoric/agoric-sdk/issues/6152): Use code that's
+    // tested against the contract.
     if (swapDirection === SwapDirection.TO_ANCHOR) {
       const fee = governedParams.GiveStableFee;
       const fromAmountAfterFee = floorMultiplyBy(newFromAmount, oneMinus(fee));

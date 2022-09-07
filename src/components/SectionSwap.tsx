@@ -52,8 +52,6 @@ const SectionSwap = ({ type }: { type: SectionSwapType }) => {
       case SectionSwapType.TO:
         setToAmount(AmountMath.make(brand, value));
         break;
-      default:
-        break;
     }
   };
 
