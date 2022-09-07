@@ -1,8 +1,10 @@
 import { atom } from 'jotai';
-import { makeDisplayFunctions } from 'utils/displayFunctions';
 import type { ERef } from '@endo/eventual-send';
-import type { Amount, Brand, DisplayInfo, Ratio } from '@agoric/ertp';
+import type { Amount, Brand, DisplayInfo } from '@agoric/ertp';
 import type { PursesJSONState } from '@agoric/wallet-backend';
+import type { Ratio } from '@agoric/zoe/src/contractSupport';
+
+import { makeDisplayFunctions } from 'utils/displayFunctions';
 
 export type BrandInfo = DisplayInfo<'nat'> & {
   petname: string;
@@ -54,3 +56,5 @@ export const displayFunctionsAtom = atom(get => {
 export const stableBrandAtom = atom(
   get => get(metricsAtom)?.feePoolBalance?.brand
 );
+
+export const previewEnabledAtom = atom(_get => false);

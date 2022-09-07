@@ -3,8 +3,7 @@ import { E } from '@endo/eventual-send';
 import type { ERef } from '@endo/eventual-send';
 import type { Id as ToastId } from 'react-toastify';
 
-import { defaultToastProperties, Errors, SwapDirection } from 'store/swap';
-import type { SwapDirectionValue, SwapError } from 'store/swap';
+import { defaultToastProperties, SwapError, SwapDirection } from 'store/swap';
 import type { PursesJSONState } from '@agoric/wallet-backend';
 
 type SwapContext = {
@@ -19,7 +18,7 @@ type SwapContext = {
   fromValue?: number | null;
   toPurse?: PursesJSONState | null;
   toValue?: number | null;
-  swapDirection: SwapDirectionValue;
+  swapDirection: SwapDirection;
 };
 
 const makeSwapOffer = ({
@@ -31,6 +30,11 @@ const makeSwapOffer = ({
   toValue,
   swapDirection,
 }: SwapContext) => {
+  assert(fromPurse, '"from" purse must be defined');
+  assert(fromValue, '"from" value must be defined');
+  assert(toPurse, '"to" purse must be defined');
+  assert(toValue, '"to" value must be defined');
+
   const method =
     swapDirection === SwapDirection.TO_STABLE
       ? 'makeWantStableInvitation'
@@ -44,14 +48,13 @@ const makeSwapOffer = ({
     proposalTemplate: {
       give: {
         In: {
-          pursePetname: (fromPurse as any)
-            .pursePetname /* this isn't an ERTP purse */,
+          pursePetname: fromPurse.pursePetname,
           value: Number(fromValue),
         },
       },
       want: {
         Out: {
-          pursePetname: (toPurse as any).pursePetname,
+          pursePetname: toPurse.pursePetname,
           value: Number(toValue),
         },
       },
@@ -76,13 +79,13 @@ export const doSwap = async (context: SwapContext) => {
   } = context;
 
   if (swapped) {
-    addError(Errors.IN_PROGRESS);
+    addError(SwapError.IN_PROGRESS);
     return;
   } else if (!(fromPurse && toPurse)) {
-    addError(Errors.NO_BRANDS);
+    addError(SwapError.NO_BRANDS);
     return;
   } else if (!(toValue && toValue > 0n && fromValue && fromValue > 0n)) {
-    addError(Errors.EMPTY_AMOUNTS);
+    addError(SwapError.EMPTY_AMOUNTS);
     return;
   }
 

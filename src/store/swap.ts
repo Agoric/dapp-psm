@@ -17,20 +17,18 @@ import {
 } from 'store/app';
 import { filterPursesByBrand } from 'utils/helpers';
 
-export const Errors = {
-  IN_PROGRESS: 'Swap in progress.',
-  EMPTY_AMOUNTS: 'Please enter the amounts first.',
-  NO_BRANDS: 'Please select the assets first.',
-} as const;
+export enum SwapError {
+  IN_PROGRESS = 'Swap in progress.',
+  EMPTY_AMOUNTS = 'Please enter the amounts first.',
+  NO_BRANDS = 'Please select the assets first.',
+}
 
-export const ButtonStatuses = {
-  SWAP: 'Swap',
-  SWAPPED: 'Swapped',
-  REJECTED: 'Rejected',
-  DECLINED: 'Declined',
-};
-
-export type SwapButtonStatus = string;
+export enum ButtonStatus {
+  SWAP = 'Swap',
+  SWAPPED = 'Swapped',
+  REJECTED = 'Rejected',
+  DECLINED = 'Declined',
+}
 
 export const defaultToastProperties: ToastOptions = {
   position: 'bottom-right',
@@ -42,13 +40,10 @@ export const defaultToastProperties: ToastOptions = {
   containerId: 'Info',
 };
 
-export const SwapDirection = {
-  TO_STABLE: 'TO_STABLE',
-  TO_ANCHOR: 'TO_ANCHOR',
-} as const;
-
-export type SwapDirectionValue = keyof typeof SwapDirection;
-export type SwapError = string;
+export enum SwapDirection {
+  TO_STABLE,
+  TO_ANCHOR,
+}
 
 // TODO: Support multiple anchors.
 export const anchorBrandAtom = atom(
@@ -83,9 +78,10 @@ const anchorUnitAmountAtom = atom(get => {
 
   const { getDecimalPlaces } = get(displayFunctionsAtom);
   const decimalPlaces = getDecimalPlaces(anchorBrand);
-  return decimalPlaces
-    ? AmountMath.make(anchorBrand, 10n ** BigInt(decimalPlaces))
-    : null;
+  if (!decimalPlaces) {
+    return null;
+  }
+  return AmountMath.make(anchorBrand, 10n ** BigInt(decimalPlaces));
 });
 
 const stableUnitAmountAtom = atom(get => {
@@ -96,9 +92,10 @@ const stableUnitAmountAtom = atom(get => {
 
   const { getDecimalPlaces } = get(displayFunctionsAtom);
   const decimalPlaces = getDecimalPlaces(stableBrand);
-  return decimalPlaces
-    ? AmountMath.make(stableBrand, 10n ** BigInt(decimalPlaces))
-    : null;
+  if (!decimalPlaces) {
+    return null;
+  }
+  return AmountMath.make(stableBrand, 10n ** BigInt(decimalPlaces));
 });
 
 const fromAmountInnerAtom = atom<Amount | null>(null);
@@ -125,6 +122,7 @@ export const fromAmountAtom = atom(
       return;
     }
 
+    // Auto-fill "to" amount when "from" amount is entered.
     if (swapDirection === SwapDirection.TO_ANCHOR) {
       const fee = governedParams.GiveStableFee;
       const fromAmountAfterFee = floorMultiplyBy(newFromAmount, oneMinus(fee));
@@ -145,6 +143,7 @@ export const fromAmountAtom = atom(
       set(toAmountInnerAtom, toAmountAfterFee);
     }
 
+    // Finally update "from" amount.
     set(fromAmountInnerAtom, newFromAmount);
   }
 );
@@ -173,6 +172,7 @@ export const toAmountAtom = atom(
       return;
     }
 
+    // Auto-fill "from" amount when "to" amount is entered.
     if (swapDirection === SwapDirection.TO_ANCHOR) {
       const fee = governedParams.GiveStableFee;
       const newFromAmount = floorMultiplyBy(
@@ -196,16 +196,15 @@ export const toAmountAtom = atom(
       set(fromAmountInnerAtom, newFromAmount);
     }
 
+    // Finally update "to" amount.
     set(toAmountInnerAtom, newToAmount);
   }
 );
 
-const swapDirectionInnerAtom = atom<SwapDirectionValue>(
-  SwapDirection.TO_STABLE
-);
+const swapDirectionInnerAtom = atom<SwapDirection>(SwapDirection.TO_STABLE);
 export const swapDirectionAtom = atom(
   get => get(swapDirectionInnerAtom),
-  (_get, set, newDirection: SwapDirectionValue) => {
+  (_get, set, newDirection: SwapDirection) => {
     set(toAmountInnerAtom, null);
     set(fromAmountInnerAtom, null);
     set(swapDirectionInnerAtom, newDirection);
@@ -214,7 +213,7 @@ export const swapDirectionAtom = atom(
 
 export const toastIdAtom = atom<ToastId | null>(null);
 export const currentOfferIdAtom = atom<number | null>(null);
-export const swapButtonStatusAtom = atom<SwapButtonStatus>(ButtonStatuses.SWAP);
+export const swapButtonStatusAtom = atom<ButtonStatus>(ButtonStatus.SWAP);
 export const swapInProgressAtom = atom<boolean>(false);
 
 const errorsInnerAtom = atom<Set<SwapError>>(new Set<SwapError>());

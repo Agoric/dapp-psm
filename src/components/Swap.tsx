@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { Oval } from 'react-loader-spinner';
 
 import SectionSwap, { SectionSwapType } from 'components/SectionSwap';
-import ExtraInformation from 'components/ExtraInformation';
+import ContractInfo from 'components/ContractInfo';
 import CustomLoader from 'components/CustomLoader';
 import {
   brandToInfoAtom,
@@ -30,10 +30,10 @@ import {
   fromPurseAtom,
   toPurseAtom,
   removeErrorAtom,
-  Errors,
+  SwapError,
   swapButtonStatusAtom,
   defaultToastProperties,
-  ButtonStatuses,
+  ButtonStatus,
   errorsAtom,
 } from 'store/swap';
 import { doSwap } from 'services/swap';
@@ -106,18 +106,18 @@ const Swap = () => {
   ]);
 
   useEffect(() => {
-    removeError(Errors.EMPTY_AMOUNTS);
+    removeError(SwapError.EMPTY_AMOUNTS);
   }, [fromAmount, toAmount, removeError]);
 
   useEffect(() => {
     if (fromPurse && toPurse) {
-      removeError(Errors.NO_BRANDS);
+      removeError(SwapError.NO_BRANDS);
     }
   }, [toPurse, fromPurse, removeError]);
 
   useEffect(() => {
     if (!swapped) {
-      removeError(Errors.IN_PROGRESS);
+      removeError(SwapError.IN_PROGRESS);
     }
   }, [swapped, removeError]);
 
@@ -128,7 +128,7 @@ const Swap = () => {
       );
       const swapStatus = currentOffer?.status;
       if (swapStatus === 'accept') {
-        setSwapButtonStatus(ButtonStatuses.SWAPPED);
+        setSwapButtonStatus(ButtonStatus.SWAPPED);
         toast.update(toastId, {
           render: 'Tokens successfully swapped',
           type: toast.TYPE.SUCCESS,
@@ -136,7 +136,7 @@ const Swap = () => {
         });
         setToastId(null);
       } else if (swapStatus === 'decline') {
-        setSwapButtonStatus(ButtonStatuses.DECLINED);
+        setSwapButtonStatus(ButtonStatus.DECLINED);
         toast.update(toastId, {
           render: 'Swap offer declined',
           type: toast.TYPE.ERROR,
@@ -144,7 +144,7 @@ const Swap = () => {
         });
         setToastId(null);
       } else if (currentOffer?.error) {
-        setSwapButtonStatus(ButtonStatuses.REJECTED);
+        setSwapButtonStatus(ButtonStatus.REJECTED);
         toast.update(toastId, {
           render: 'Swap offer rejected by contract',
           type: toast.TYPE.WARNING,
@@ -160,7 +160,7 @@ const Swap = () => {
         setCurrentOfferId(null);
         setTimeout(() => {
           setSwapped(false);
-          setSwapButtonStatus(ButtonStatuses.SWAP);
+          setSwapButtonStatus(ButtonStatus.SWAP);
         }, 3000);
       }
     }
@@ -219,7 +219,7 @@ const Swap = () => {
           <SectionSwap type={SectionSwapType.TO} />
         </motion.div>
       )}
-      <ExtraInformation />
+      <ContractInfo />
       <motion.button
         className={clsx(
           'flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-xl font-medium p-3  uppercase',
@@ -239,8 +239,8 @@ const Swap = () => {
             <FiCheck className="absolute right-0" size={28} />
           )}
           {swapped &&
-            (swapButtonStatus === 'rejected' ||
-              swapButtonStatus === 'declined') && (
+            (swapButtonStatus === ButtonStatus.REJECTED ||
+              swapButtonStatus === ButtonStatus.DECLINED) && (
               <BiErrorCircle className="absolute right-0" size={28} />
             )}
           <div className="text-white">{swapButtonStatus}</div>

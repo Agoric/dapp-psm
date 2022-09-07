@@ -9,7 +9,7 @@ import type { Brand } from '@agoric/ertp';
 
 import CustomInput from 'components/CustomInput';
 import DialogSwap from 'components/DialogSwap';
-import { displayFunctionsAtom } from 'store/app';
+import { displayFunctionsAtom, previewEnabledAtom } from 'store/app';
 import { displayPetname } from 'utils/displayFunctions';
 import {
   toAmountAtom,
@@ -18,12 +18,12 @@ import {
   toPurseAtom,
 } from 'store/swap';
 
-export const SectionSwapType = {
-  FROM: 'FROM',
-  TO: 'TO',
-} as const;
+export enum SectionSwapType {
+  FROM = 'FROM',
+  TO = 'TO',
+}
 
-const SectionSwap = ({ type }: { type: string }) => {
+const SectionSwap = ({ type }: { type: SectionSwapType }) => {
   const { displayBrandIcon, displayBrandPetname } =
     useAtomValue(displayFunctionsAtom);
   const fromPurse = useAtomValue(fromPurseAtom);
@@ -31,6 +31,7 @@ const SectionSwap = ({ type }: { type: string }) => {
   const [toAmount, setToAmount] = useAtom(toAmountAtom);
   const [fromAmount, setFromAmount] = useAtom(fromAmountAtom);
   const [open, setOpen] = useState(false);
+  const multiBrandsEnabled = useAtomValue(previewEnabledAtom);
 
   const value =
     type === SectionSwapType.TO ? toAmount?.value : fromAmount?.value;
@@ -44,10 +45,15 @@ const SectionSwap = ({ type }: { type: string }) => {
   const brand = purse?.brand;
 
   const handleValueChange = (value: bigint) => {
-    if (type === SectionSwapType.FROM) {
-      setFromAmount(AmountMath.make(brand, value));
-    } else {
-      setToAmount(AmountMath.make(brand, value));
+    switch (type) {
+      case SectionSwapType.FROM:
+        setFromAmount(AmountMath.make(brand, value));
+        break;
+      case SectionSwapType.TO:
+        setToAmount(AmountMath.make(brand, value));
+        break;
+      default:
+        break;
     }
   };
 
@@ -65,7 +71,7 @@ const SectionSwap = ({ type }: { type: string }) => {
         layout
       >
         <h3 className="text-xs uppercase text-gray-500 tracking-wide font-medium select-none">
-          Swap {type.toUpperCase()}
+          Swap {type}
         </h3>
         <div className="flex gap-3 items-center">
           <div className="w-12 h-12">
@@ -76,14 +82,14 @@ const SectionSwap = ({ type }: { type: string }) => {
               className="flex flex-col w-28 hover:bg-black cursor-pointer hover:bg-opacity-5 p-1 rounded-sm"
               onClick={() => {
                 // TODO: Support multiple anchor brands.
-                false && setOpen(true);
+                multiBrandsEnabled && setOpen(true);
               }}
             >
               <div className="flex  items-center justify-between">
                 <h2 className="text-xl uppercase font-medium">
                   {displayBrandPetname(brand)}
                 </h2>
-                {false && <FiChevronDown className="text-xl" />}
+                {multiBrandsEnabled && <FiChevronDown className="text-xl" />}
               </div>
               <h3 className="text-xs text-gray-500 font-semibold">
                 Purse: <span>{displayPetname(purse?.pursePetname ?? '')}</span>{' '}

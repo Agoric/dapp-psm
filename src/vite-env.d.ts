@@ -24,10 +24,6 @@ declare module '@agoric/ertp' {
     COPY_SET: 'copySet',
     COPY_BAG: 'copyBag',
   };
-  export type Ratio = {
-    numerator: Amount;
-    denominator: Amount;
-  };
 }
 
 declare module '@agoric/wallet-backend' {
@@ -57,4 +53,13 @@ declare module '@agoric/ui-components' {
   export const stringifyRatio;
 }
 
-declare module '@agoric/zoe/src/contractSupport';
+declare module '@agoric/zoe/src/contractSupport' {
+  export type Ratio = {
+    numerator: Amount;
+    denominator: Amount;
+  };
+  export const makeRatioFromAmounts;
+  export const floorMultiplyBy;
+  export const oneMinus;
+  export const floorDivideBy;
+}

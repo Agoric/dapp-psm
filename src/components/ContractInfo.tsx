@@ -13,7 +13,7 @@ const InfoItem = ({
   </div>
 );
 
-const ExtraInformation = () => {
+const ContractInfo = () => {
   const { GiveStableFee, WantStableFee } =
     useAtomValue(governedParamsAtom) ?? {};
   const { displayPercent } = useAtomValue(displayFunctionsAtom);
@@ -38,4 +38,4 @@ const ExtraInformation = () => {
   );
 };
 
-export default ExtraInformation;
+export default ContractInfo;
