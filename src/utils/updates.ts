@@ -15,9 +15,12 @@ import { PursesJSONState } from '@agoric/wallet-backend';
 const watchGovernance = async (
   leader: Leader,
   unserializer: Marshal<any>,
-  setGovernedParams: (params: GovernedParams) => void
+  setGovernedParamsIndex: ContractSetters['setGovernedParamsIndex'],
+  anchorPetname: string
 ) => {
-  const f = makeFollower(dappConfig.GOVERNANCE_KEY, leader, { unserializer });
+  // E.g. ':published.psm.IST.AUSD.governance'
+  const spec = dappConfig.INSTANCE_PREFIX + anchorPetname + '.governance';
+  const f = makeFollower(spec, leader, { unserializer });
 
   for await (const { value } of iterateLatest(f)) {
     const current = value.current;
@@ -25,62 +28,91 @@ const watchGovernance = async (
     const MintLimit = current.MintLimit.value;
     const WantStableFee = current.WantMintedFee.value;
 
-    setGovernedParams({ GiveStableFee, MintLimit, WantStableFee });
+    setGovernedParamsIndex([
+      [anchorPetname, { GiveStableFee, MintLimit, WantStableFee }],
+    ]);
   }
 };
 
 const watchMetrics = async (
   leader: Leader,
   unserializer: Marshal<any>,
-  setMetrics: (metrics: Metrics) => void
+  setMetricsIndex: ContractSetters['setMetricsIndex'],
+  anchorPetname: string
 ) => {
-  const f = makeFollower(dappConfig.METRICS_KEY, leader, { unserializer });
+  // E.g. ':published.psm.IST.AUSD.metrics'
+  const spec = dappConfig.INSTANCE_PREFIX + anchorPetname + '.metrics';
+  const f = makeFollower(spec, leader, { unserializer });
 
   for await (const { value } of iterateLatest(f)) {
-    setMetrics(value);
+    setMetricsIndex([[anchorPetname, value]]);
   }
 };
 
-const loadInstanceId = async (
+const watchInstanceIds = async (
   leader: Leader,
-  setInstanceId: (id: string | undefined) => void
+  setters: ContractSetters,
+  walletUnserializer: Marshal<any>
 ) => {
   const f = makeFollower(dappConfig.INSTANCES_KEY, leader, {
     unserializer: identityMarshal,
     proof: 'none',
   });
 
+  const watchedAnchors = new Set();
+
   for await (const { value } of iterateLatest(f)) {
-    const mappedEntries = new Map<string, string>(value);
-    setInstanceId(mappedEntries.get('psm'));
+    // Convert entries of ["psm-IST-AUSD", "board012"] to ["AUSD", "board012"].
+    const PSMEntries = (value as [string, string][])
+      .filter(entry => entry[0].startsWith('psm-IST-'))
+      .map(
+        ([key, boardId]) =>
+          [key.slice('psm-IST-'.length), boardId] as [string, string]
+      );
+
+    setters.setInstanceIds(PSMEntries);
+
+    PSMEntries.forEach(([anchorPetname]) => {
+      if (!watchedAnchors.has(anchorPetname)) {
+        watchedAnchors.add(anchorPetname);
+
+        watchMetrics(
+          leader,
+          walletUnserializer,
+          setters.setMetricsIndex,
+          anchorPetname
+        ).catch(e =>
+          console.error('Error watching metrics for', anchorPetname, e)
+        );
+
+        watchGovernance(
+          leader,
+          walletUnserializer,
+          setters.setGovernedParamsIndex,
+          anchorPetname
+        ).catch(e =>
+          console.error('Error watching governed params for', anchorPetname, e)
+        );
+      }
+    });
   }
 };
 
 declare type ContractSetters = {
-  setInstanceId: (id: string | undefined) => void;
-  setMetrics: (metrics: Metrics) => void;
-  setGovernedParams: (params: GovernedParams) => void;
+  setInstanceIds: (ids: [string, string][]) => void;
+  setMetricsIndex: (metrics: [string, Metrics][]) => void;
+  setGovernedParamsIndex: (params: [string, GovernedParams][]) => void;
 };
 
 export const watchContract = async (wallet: any, setters: ContractSetters) => {
-  const { setInstanceId, setMetrics, setGovernedParams } = setters;
-
-  const [unserializer, netConfig] = await Promise.all([
+  const [walletUnserializer, netConfig] = await Promise.all([
     E(wallet).getUnserializer(),
     E(wallet).getNetConfig(),
   ]);
   const leader = makeLeader(netConfig);
 
-  watchMetrics(leader, unserializer, setMetrics).catch((err: Error) =>
-    console.error('got watchMetrics err', err)
-  );
-
-  watchGovernance(leader, unserializer, setGovernedParams).catch((err: Error) =>
-    console.error('got watchGovernance err', err)
-  );
-
-  loadInstanceId(leader, setInstanceId).catch((err: Error) =>
-    console.error('got loadInstanceId err', err)
+  watchInstanceIds(leader, setters, walletUnserializer).catch((err: Error) =>
+    console.error('got loadInstanceIds err', err)
   );
 };
 

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useAtomValue } from 'jotai';
-import { displayFunctionsAtom, governedParamsAtom } from 'store/app';
+import { displayFunctionsAtom } from 'store/app';
+import { governedParamsAtom, metricsAtom } from 'store/swap';
 import { swapDirectionAtom, SwapDirection } from 'store/swap';
 
 const InfoItem = ({
@@ -16,7 +17,9 @@ const InfoItem = ({
 const ContractInfo = () => {
   const { GiveStableFee, WantStableFee } =
     useAtomValue(governedParamsAtom) ?? {};
-  const { displayPercent } = useAtomValue(displayFunctionsAtom);
+  const { anchorPoolBalance } = useAtomValue(metricsAtom) ?? {};
+  const { displayPercent, displayAmount, displayBrandPetname } =
+    useAtomValue(displayFunctionsAtom);
 
   const swapDirection = useAtomValue(swapDirectionAtom);
   const fee =
@@ -31,6 +34,13 @@ const ContractInfo = () => {
       <InfoItem>
         Fee
         <div className="pr-2">{displayPercent(fee, 2)}%</div>
+      </InfoItem>
+      <InfoItem>
+        Reserve Balance
+        <div className="pr-2">
+          {displayAmount(anchorPoolBalance, 2)}{' '}
+          {displayBrandPetname(anchorPoolBalance?.brand)}
+        </div>
       </InfoItem>
     </motion.div>
   ) : (
