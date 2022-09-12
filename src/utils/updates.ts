@@ -7,7 +7,6 @@ import {
   Leader,
 } from '@agoric/casting';
 import { dappConfig } from 'config';
-import { identityMarshal } from 'utils/identityMarshal';
 import type { Metrics, GovernedParams, BrandInfo } from 'store/app';
 import type { Marshal } from '@endo/marshal';
 import { PursesJSONState } from '@agoric/wallet-backend';
@@ -55,7 +54,7 @@ const watchInstanceIds = async (
   walletUnserializer: Marshal<any>
 ) => {
   const f = makeFollower(dappConfig.INSTANCES_KEY, leader, {
-    unserializer: identityMarshal,
+    unserializer: walletUnserializer,
     proof: 'none',
   });
 
