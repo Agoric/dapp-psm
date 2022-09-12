@@ -19,7 +19,7 @@ export const offersAtom = atom<Array<any> | null>(null);
 
 export const pursesAtom = atom<Array<PursesJSONState> | null>(null);
 
-// A map of anchor brand petnames to their instance ids.
+/** A map of anchor brand petnames to their instance ids. */
 export const instanceIdsAtom = mapAtom<string, string>();
 
 export type Metrics = {
@@ -29,7 +29,7 @@ export type Metrics = {
   totalStableProvided: Amount;
 };
 
-// A map of anchor brand petnames to their instances' metrics.
+/** A map of anchor brand petnames to their instances' metrics. */
 export const metricsIndexAtom = mapAtom<string, Metrics>();
 
 export type GovernedParams = {
@@ -38,7 +38,7 @@ export type GovernedParams = {
   WantStableFee: Ratio;
 };
 
-// A map of anchor brand petnames to their instancess' governed params.
+/** A map of anchor brand petnames to their instancess' governed params. */
 export const governedParamsIndexAtom = mapAtom<string, GovernedParams>();
 
 export const displayFunctionsAtom = atom(get => {
@@ -46,5 +46,5 @@ export const displayFunctionsAtom = atom(get => {
   return makeDisplayFunctions(brandToInfo);
 });
 
-// Experimental feature flag.
+/**  Experimental feature flag. */
 export const previewEnabledAtom = atom(_get => false);

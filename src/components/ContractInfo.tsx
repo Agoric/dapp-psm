@@ -25,7 +25,7 @@ const ContractInfo = () => {
   const fee =
     swapDirection === SwapDirection.TO_STABLE ? WantStableFee : GiveStableFee;
 
-  return fee ? (
+  return fee && anchorPoolBalance ? (
     <motion.div className="flex flex-col" layout>
       <InfoItem>
         Exchange Rate

@@ -64,23 +64,13 @@ const Swap = () => {
   const areAnchorsLoaded =
     anchorPetnames.length &&
     anchorPetnames
-      .map(petname => {
+      .every(petname => {
         const metrics = metricsIndex.get(petname);
         const brand = metrics?.anchorPoolBalance.brand;
         const brandInfo = brand && brandToInfo.get(brand);
         const governedParams = governedParamsIndex.get(petname);
-
-        if (metrics && brandInfo && governedParams) {
-          return true;
-        }
-        return false;
+        return metrics && brandInfo && governedParams;
       })
-      .reduce(
-        (arePrevAssetsLoaded, isAssetLoaded) =>
-          arePrevAssetsLoaded && isAssetLoaded,
-        true
-      );
-  console.log('data', brandToInfo, metricsIndex, governedParamsIndex);
 
   const switchToAndFrom = useCallback(() => {
     if (swapDirection === SwapDirection.TO_ANCHOR) {
@@ -220,7 +210,7 @@ const Swap = () => {
         <h1 className="text-2xl font-semibold text-slate-800">Stable Swap</h1>
       </motion.div>
       {!areAnchorsLoaded ? (
-        <CustomLoader text="Please connect wallet..." />
+        <CustomLoader text="Please connect wallet" />
       ) : (
         <motion.div
           className="flex flex-col gap-4 relative"

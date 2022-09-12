@@ -62,13 +62,16 @@ const watchInstanceIds = async (
   const watchedAnchors = new Set();
 
   for await (const { value } of iterateLatest(f)) {
-    // Convert entries of ["psm-IST-AUSD", "board012"] to ["AUSD", "board012"].
+    const INSTANCE_NAME_PREFIX = 'psm-IST-';
+    // Remove "psm-IST-" prefix so they're like ["AUSD", "board012"]
     const PSMEntries = (value as [string, string][])
-      .filter(entry => entry[0].startsWith('psm-IST-'))
+      .filter(entry => entry[0].startsWith(INSTANCE_NAME_PREFIX))
       .map(
         ([key, boardId]) =>
-          [key.slice('psm-IST-'.length), boardId] as [string, string]
+          [key.slice(INSTANCE_NAME_PREFIX.length), boardId] as [string, string]
       );
+
+    console.log('instance ids', PSMEntries);
 
     setters.setInstanceIds(PSMEntries);
 
@@ -76,6 +79,7 @@ const watchInstanceIds = async (
       if (!watchedAnchors.has(anchorPetname)) {
         watchedAnchors.add(anchorPetname);
 
+        // TODO: Better error handling (toast?)
         watchMetrics(
           leader,
           walletUnserializer,

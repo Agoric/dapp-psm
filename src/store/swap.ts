@@ -59,7 +59,7 @@ export const anchorBrandsAtom = atom(get => {
   );
 });
 
-// The metrics for the currently selected anchor.
+/** The metrics for the currently selected anchor. */
 export const metricsAtom = atom<Metrics | null>(get => {
   const selectedPetname = get(selectedAnchorPetnameAtom);
   if (!selectedPetname) {
@@ -68,7 +68,7 @@ export const metricsAtom = atom<Metrics | null>(get => {
   return get(metricsIndexAtom).get(selectedPetname) ?? null;
 });
 
-// The governed params for the currently selected anchor.
+/** The governed params for the currently selected anchor. */
 export const governedParamsAtom = atom<GovernedParams | null>(get => {
   const selectedPetname = get(selectedAnchorPetnameAtom);
   if (!selectedPetname) {
@@ -77,7 +77,7 @@ export const governedParamsAtom = atom<GovernedParams | null>(get => {
   return get(governedParamsIndexAtom).get(selectedPetname) ?? null;
 });
 
-// The contract instance id for the currently selected anchor.
+/** The contract instance id for the currently selected anchor. */
 export const instanceIdAtom = atom<string | null>(get => {
   const selectedPetname = get(selectedAnchorPetnameAtom);
   if (!selectedPetname) {

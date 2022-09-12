@@ -20,8 +20,8 @@ export const comparePurses = (a: PursesJSONState, b: PursesJSONState) =>
 export const sortPurses = (purses: PursesJSONState[]) =>
   purses.sort(comparePurses);
 
-export const mapAtom = <T1, T2>() => {
-  const innerAtom = atom<Map<T1, T2>>(new Map());
+export const mapAtom = <K, V>() => {
+  const innerAtom = atom<Map<K, V>>(new Map());
 
   return atom(
     get => get(innerAtom),
