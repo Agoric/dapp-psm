@@ -3,7 +3,8 @@ import {
   makeRatioFromAmounts,
   floorMultiplyBy,
   oneMinus,
-  floorDivideBy,
+  ceilDivideBy,
+  ceilMultiplyBy,
 } from '@agoric/zoe/src/contractSupport';
 import { Amount, AmountMath } from '@agoric/ertp';
 import type { Id as ToastId, ToastOptions } from 'react-toastify';
@@ -43,7 +44,7 @@ export const defaultToastProperties: ToastOptions = {
 
 export enum SwapDirection {
   TO_STABLE,
-  TO_ANCHOR,
+  TO_MINTED,
 }
 
 export const selectedAnchorPetnameAtom = atom<string | null>(null);
@@ -102,7 +103,7 @@ export const stableBrandAtom = atom(get => {
 export const fromPurseAtom = atom(get => {
   const direction = get(swapDirectionAtom);
   const fromBrand =
-    direction === SwapDirection.TO_ANCHOR
+    direction === SwapDirection.TO_STABLE
       ? get(stableBrandAtom)
       : get(anchorBrandAtom);
   const purses = get(pursesAtom);
@@ -112,7 +113,7 @@ export const fromPurseAtom = atom(get => {
 export const toPurseAtom = atom(get => {
   const direction = get(swapDirectionAtom);
   const toBrand =
-    direction === SwapDirection.TO_STABLE
+    direction === SwapDirection.TO_MINTED
       ? get(stableBrandAtom)
       : get(anchorBrandAtom);
   const purses = get(pursesAtom);
@@ -175,7 +176,7 @@ export const fromAmountAtom = atom(
     //
     // TODO(https://github.com/Agoric/agoric-sdk/issues/6152): Use code that's
     // tested against the contract.
-    if (swapDirection === SwapDirection.TO_ANCHOR) {
+    if (swapDirection === SwapDirection.TO_STABLE) {
       const fee = governedParams.GiveStableFee;
       const fromAmountAfterFee = floorMultiplyBy(newFromAmount, oneMinus(fee));
       const newToAmount = floorMultiplyBy(
@@ -185,7 +186,7 @@ export const fromAmountAtom = atom(
       set(toAmountInnerAtom, newToAmount);
     }
 
-    if (swapDirection === SwapDirection.TO_STABLE) {
+    if (swapDirection === SwapDirection.TO_MINTED) {
       const fee = governedParams.WantStableFee;
       const newToAmount = floorMultiplyBy(
         newFromAmount,
@@ -225,23 +226,23 @@ export const toAmountAtom = atom(
     }
 
     // Auto-fill "from" amount when "to" amount is entered.
-    if (swapDirection === SwapDirection.TO_ANCHOR) {
+    if (swapDirection === SwapDirection.TO_STABLE) {
       const fee = governedParams.GiveStableFee;
-      const newFromAmount = floorMultiplyBy(
+      const newFromAmount = ceilMultiplyBy(
         newToAmount,
         makeRatioFromAmounts(stableUnitAmount, anchorUnitAmount)
       );
-      const fromAmountBeforeFee = floorDivideBy(newFromAmount, oneMinus(fee));
+      const fromAmountBeforeFee = ceilDivideBy(newFromAmount, oneMinus(fee));
       set(fromAmountInnerAtom, fromAmountBeforeFee);
     }
 
-    if (swapDirection === SwapDirection.TO_STABLE) {
+    if (swapDirection === SwapDirection.TO_MINTED) {
       const fee = governedParams.WantStableFee;
-      const stableEquivalentBeforeFee = floorDivideBy(
+      const stableEquivalentBeforeFee = ceilDivideBy(
         newToAmount,
         oneMinus(fee)
       );
-      const newFromAmount = floorMultiplyBy(
+      const newFromAmount = ceilMultiplyBy(
         stableEquivalentBeforeFee,
         makeRatioFromAmounts(anchorUnitAmount, stableUnitAmount)
       );
@@ -253,7 +254,7 @@ export const toAmountAtom = atom(
   }
 );
 
-const swapDirectionInnerAtom = atom<SwapDirection>(SwapDirection.TO_STABLE);
+const swapDirectionInnerAtom = atom<SwapDirection>(SwapDirection.TO_MINTED);
 export const swapDirectionAtom = atom(
   get => get(swapDirectionInnerAtom),
   (_get, set, newDirection: SwapDirection) => {

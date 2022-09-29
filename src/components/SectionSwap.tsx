@@ -43,9 +43,9 @@ const SectionSwap = ({ type }: { type: SectionSwapType }) => {
   );
 
   const isStable =
-    (swapDirection === SwapDirection.TO_STABLE &&
+    (swapDirection === SwapDirection.TO_MINTED &&
       type === SectionSwapType.TO) ||
-    (swapDirection === SwapDirection.TO_ANCHOR &&
+    (swapDirection === SwapDirection.TO_STABLE &&
       type === SectionSwapType.FROM);
 
   const value =

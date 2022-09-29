@@ -36,7 +36,7 @@ const makeSwapOffer = ({
   assert(toValue, '"to" value must be defined');
 
   const method =
-    swapDirection === SwapDirection.TO_STABLE
+    swapDirection === SwapDirection.TO_MINTED
       ? 'makeWantMintedInvitation'
       : 'makeGiveMintedInvitation';
 

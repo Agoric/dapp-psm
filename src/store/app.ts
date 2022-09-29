@@ -27,6 +27,7 @@ export type Metrics = {
   feePoolBalance: Amount;
   totalAnchorProvided: Amount;
   totalStableProvided: Amount;
+  mintedPoolBalance: Amount;
 };
 
 /** A map of anchor brand petnames to their instances' metrics. */
