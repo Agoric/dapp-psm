@@ -26,7 +26,7 @@ export type Metrics = {
   anchorPoolBalance: Amount;
   feePoolBalance: Amount;
   totalAnchorProvided: Amount;
-  totalStableProvided: Amount;
+  totalMintedProvided: Amount;
   mintedPoolBalance: Amount;
 };
 
@@ -34,9 +34,9 @@ export type Metrics = {
 export const metricsIndexAtom = mapAtom<string, Metrics>();
 
 export type GovernedParams = {
-  GiveStableFee: Ratio;
-  MintLimit: Amount;
-  WantStableFee: Ratio;
+  giveMintedFee: Ratio;
+  mintLimit: Amount;
+  wantMintedFee: Ratio;
 };
 
 /** A map of anchor brand petnames to their instancess' governed params. */

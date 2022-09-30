@@ -18,7 +18,7 @@ const InfoItem = ({
 );
 
 const ContractInfo = () => {
-  const { GiveStableFee, WantStableFee, MintLimit } =
+  const { giveMintedFee, wantMintedFee, mintLimit } =
     useAtomValue(governedParamsAtom) ?? {};
   const { anchorPoolBalance, mintedPoolBalance } =
     useAtomValue(metricsAtom) ?? {};
@@ -27,40 +27,40 @@ const ContractInfo = () => {
 
   const swapDirection = useAtomValue(swapDirectionAtom);
   const fee =
-    swapDirection === SwapDirection.TO_MINTED ? WantStableFee : GiveStableFee;
+    swapDirection === SwapDirection.WantMinted ? wantMintedFee : giveMintedFee;
 
-  const stableAvailable = useMemo(
-    () => (
+  const anchorAvailable = useMemo(() => {
+    if (!anchorPoolBalance) return null;
+
+    return (
       <InfoItem>
-        {displayBrandPetname(anchorPoolBalance?.brand)} Available
+        {displayBrandPetname(anchorPoolBalance.brand)} Available
         <div className="pr-2">
           {anchorPoolBalance && displayAmount(anchorPoolBalance)}
         </div>
       </InfoItem>
-    ),
-    [anchorPoolBalance, displayAmount, displayBrandPetname]
-  );
+    );
+  }, [anchorPoolBalance, displayAmount, displayBrandPetname]);
 
-  const mintedAvailable = useMemo(
-    () => (
+  const mintedAvailable = useMemo(() => {
+    if (!mintLimit || !mintedPoolBalance) return null;
+
+    return (
       <InfoItem>
-        {displayBrandPetname(MintLimit?.brand)} Available
+        {displayBrandPetname(mintLimit?.brand)} Available
         <div className="pr-2">
-          {MintLimit &&
-            mintedPoolBalance &&
-            displayAmount(AmountMath.subtract(MintLimit, mintedPoolBalance))}
+          {displayAmount(AmountMath.subtract(mintLimit, mintedPoolBalance))}
         </div>
       </InfoItem>
-    ),
-    [MintLimit, mintedPoolBalance, displayAmount, displayBrandPetname]
-  );
+    );
+  }, [mintLimit, mintedPoolBalance, displayAmount, displayBrandPetname]);
 
   const amountAvailable =
-    swapDirection === SwapDirection.TO_MINTED
+    swapDirection === SwapDirection.WantMinted
       ? mintedAvailable
-      : stableAvailable;
+      : anchorAvailable;
 
-  return fee && anchorPoolBalance ? (
+  return fee && amountAvailable ? (
     <motion.div className="flex flex-col" layout>
       <InfoItem>
         Exchange Rate

@@ -6,6 +6,8 @@ import { displayFunctionsAtom } from 'store/app';
 import { PursesJSONState } from '@agoric/wallet-backend';
 import { calcSignificantDecimalPlaces } from 'utils/displayFunctions';
 
+const DEFAULT_PLACES_TO_SHOW = 2;
+
 const CustomInput = ({
   value,
   onChange,
@@ -29,7 +31,7 @@ const CustomInput = ({
 
   const placesToShow = Math.max(
     calcSignificantDecimalPlaces(decimalPlaces, value),
-    2
+    DEFAULT_PLACES_TO_SHOW
   );
   const amountString = stringifyValue(
     value,

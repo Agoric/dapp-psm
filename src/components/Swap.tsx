@@ -72,10 +72,10 @@ const Swap = () => {
     });
 
   const switchToAndFrom = useCallback(() => {
-    if (swapDirection === SwapDirection.TO_STABLE) {
-      setSwapDirection(SwapDirection.TO_MINTED);
+    if (swapDirection === SwapDirection.WantAnchor) {
+      setSwapDirection(SwapDirection.WantMinted);
     } else {
-      setSwapDirection(SwapDirection.TO_STABLE);
+      setSwapDirection(SwapDirection.WantAnchor);
     }
   }, [swapDirection, setSwapDirection]);
 
