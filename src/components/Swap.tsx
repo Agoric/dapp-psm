@@ -17,6 +17,8 @@ import {
   governedParamsIndexAtom,
   metricsIndexAtom,
   instanceIdsAtom,
+  keplrConnectionAtom,
+  bridgeApprovedAtom,
 } from 'store/app';
 import { instanceIdAtom } from 'store/swap';
 import {
@@ -40,6 +42,8 @@ import {
 import { doSwap } from 'services/swap';
 
 const Swap = () => {
+  const bridgeApproved = useAtomValue(bridgeApprovedAtom);
+  const keplrConnection = useAtomValue(keplrConnectionAtom);
   const brandToInfo = useAtomValue(brandToInfoAtom);
   const metricsIndex = useAtomValue(metricsIndexAtom);
   const governedParamsIndex = useAtomValue(governedParamsIndexAtom);
@@ -80,7 +84,7 @@ const Swap = () => {
   }, [swapDirection, setSwapDirection]);
 
   const handleSwap = useCallback(() => {
-    if (!areAnchorsLoaded) return;
+    if (!areAnchorsLoaded || !bridgeApproved) return;
 
     const fromValue = fromAmount?.value;
     const toValue = toAmount?.value;
@@ -113,6 +117,7 @@ const Swap = () => {
     toAmount?.value,
     toPurse,
     walletP,
+    bridgeApproved,
   ]);
 
   useEffect(() => {
@@ -194,6 +199,28 @@ const Swap = () => {
     );
   });
 
+  const form = !areAnchorsLoaded ? (
+    <CustomLoader text="Loading contract data from chain" />
+  ) : (
+    <motion.div
+      className="flex flex-col gap-4 relative"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      layout
+    >
+      <div className="flex flex-col gap-4 relative">
+        <SectionSwap type={SectionSwapType.FROM} />
+        <FiRepeat
+          className="transform rotate-90 p-1 bg-alternative absolute left-6 position-swap-icon cursor-pointer hover:bg-alternativeDark z-20 border-4 border-white box-border"
+          size="30"
+          onClick={switchToAndFrom}
+        />
+      </div>
+      <SectionSwap type={SectionSwapType.TO} />
+    </motion.div>
+  );
+
   return (
     <motion.div
       layout
@@ -216,26 +243,10 @@ const Swap = () => {
           </a>
         </span>
       </motion.div>
-      {!areAnchorsLoaded ? (
-        <CustomLoader text="Please connect wallet" />
+      {keplrConnection ? (
+        form
       ) : (
-        <motion.div
-          className="flex flex-col gap-4 relative"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          layout
-        >
-          <div className="flex flex-col gap-4 relative">
-            <SectionSwap type={SectionSwapType.FROM} />
-            <FiRepeat
-              className="transform rotate-90 p-1 bg-alternative absolute left-6 position-swap-icon cursor-pointer hover:bg-alternativeDark z-20 border-4 border-white box-border"
-              size="30"
-              onClick={switchToAndFrom}
-            />
-          </div>
-          <SectionSwap type={SectionSwapType.TO} />
-        </motion.div>
+        <CustomLoader text="Connect Keplr to continue" />
       )}
       <ContractInfo />
       <motion.button

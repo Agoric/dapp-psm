@@ -1,5 +1,4 @@
 import { atom } from 'jotai';
-import type { ERef } from '@endo/eventual-send';
 import type { Amount, Brand, DisplayInfo } from '@agoric/ertp';
 import type { PursesJSONState } from '@agoric/wallet-backend';
 import type { Ratio } from '@agoric/zoe/src/contractSupport';
@@ -11,9 +10,17 @@ export type BrandInfo = DisplayInfo<'nat'> & {
   petname: string;
 };
 
+export type WalletBridge = {
+  addOffer: (offerConfig: any) => void;
+};
+
+export const bridgeApprovedAtom = atom(false);
+
 export const brandToInfoAtom = mapAtom<Brand, BrandInfo>();
 
-export const walletAtom = atom<ERef<any>>(null);
+export const walletAtom = atom<WalletBridge | null>(null);
+
+export const keplrConnectionAtom = atom<any | null>(null);
 
 export const offersAtom = atom<Array<any> | null>(null);
 

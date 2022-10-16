@@ -108,13 +108,9 @@ declare type ContractSetters = {
 };
 
 export const watchContract = async (wallet: any, setters: ContractSetters) => {
-  const [walletUnserializer, netConfig] = await Promise.all([
-    E(wallet).getUnserializer(),
-    E(wallet).getNetConfig(),
-  ]);
-  const leader = makeLeader(netConfig);
+  const { leader, unserializer } = wallet;
 
-  watchInstanceIds(leader, setters, walletUnserializer).catch((err: Error) =>
+  watchInstanceIds(leader, setters, unserializer).catch((err: Error) =>
     console.error('got loadInstanceIds err', err)
   );
 };
