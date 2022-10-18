@@ -16,7 +16,6 @@ import {
   governedParamsIndexAtom,
   metricsIndexAtom,
   keplrConnectionAtom,
-  brandBoardIdsAtom,
 } from 'store/app';
 import { watchContract, watchPurses } from 'utils/updates';
 
@@ -32,7 +31,6 @@ const KeplrConnection = () => {
   const setMetricsIndex = useSetAtom(metricsIndexAtom);
   const setGovernedParamsIndex = useSetAtom(governedParamsIndexAtom);
   const setInstanceIds = useSetAtom(instanceIdsAtom);
-  const setBrandBoardIds = useSetAtom(brandBoardIdsAtom);
 
   useEffect(() => {
     if (keplrConnection === null) return;
@@ -45,7 +43,6 @@ const KeplrConnection = () => {
       setMetricsIndex,
       setGovernedParamsIndex,
       setInstanceIds,
-      setBrandBoardIds,
     });
   }, [
     keplrConnection,
@@ -55,7 +52,6 @@ const KeplrConnection = () => {
     setMetricsIndex,
     setGovernedParamsIndex,
     setInstanceIds,
-    setBrandBoardIds,
   ]);
 
   const connect = async () => {

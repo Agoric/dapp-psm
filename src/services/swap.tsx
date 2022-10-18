@@ -1,7 +1,8 @@
 import { toast } from 'react-toastify';
+import type { PursesJSONState } from '@agoric/wallet-backend';
+import { E } from '@endo/eventual-send';
 
 import { SwapError, SwapDirection } from 'store/swap';
-import type { PursesJSONState } from '@agoric/wallet-backend';
 import { WalletBridge } from 'store/app';
 
 type SwapContext = {
@@ -14,11 +15,10 @@ type SwapContext = {
   toValue?: bigint | null;
   swapDirection: SwapDirection;
   setSwapped: (isSwapped: boolean) => void;
-  fromBrandBoardId: string;
-  toBrandBoardId: string;
+  marshal: any;
 };
 
-const makeSwapOffer = ({
+const makeSwapOffer = async ({
   wallet,
   instanceId,
   fromPurse,
@@ -26,8 +26,7 @@ const makeSwapOffer = ({
   toPurse,
   toValue,
   swapDirection,
-  fromBrandBoardId,
-  toBrandBoardId,
+  marshal,
 }: SwapContext) => {
   assert(fromPurse, '"from" purse must be defined');
   assert(fromValue, '"from" value must be defined');
@@ -39,22 +38,23 @@ const makeSwapOffer = ({
       ? 'makeWantMintedInvitation'
       : 'makeGiveMintedInvitation';
 
+  console.log('wallet marshal', marshal);
+  const serializedInstance = await E(marshal).serialize(instanceId);
+
   const offerConfig = {
     invitationMaker: {
       method,
     },
-    instanceHandleBoardId: instanceId,
+    instanceHandleBoardId: serializedInstance,
     proposalTemplate: {
       give: {
         In: {
-          brand: fromBrandBoardId,
           pursePetname: fromPurse.pursePetname,
           value: Number(fromValue),
         },
       },
       want: {
         Out: {
-          brand: toBrandBoardId,
           pursePetname: toPurse.pursePetname,
           value: Number(toValue),
         },
