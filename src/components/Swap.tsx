@@ -184,7 +184,7 @@ const Swap = () => {
       >
         <motion.div className="relative flex flex-row w-full justify-center items-center">
           <div className="w-6" />
-          <div className="text-white w-fit">Swap</div>
+          <div className="text-white w-fit">Create Swap Offer</div>
           <AnimatedCheckIcon isVisible={swapped} />
         </motion.div>
       </motion.button>
