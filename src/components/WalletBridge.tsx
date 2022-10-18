@@ -44,7 +44,7 @@ const WalletBridge = () => {
     clearWarningToast();
     connectionSuccessfulToastId.current = toast.success(
       <p>
-        Successfully connected to wallet at{' '}
+        Successfully connected to Agoric wallet at{' '}
         <a
           className="underline text-blue-500"
           href="https://wallet.agoric.app/wallet/"
@@ -55,7 +55,7 @@ const WalletBridge = () => {
         </a>
         .
       </p>,
-      { autoClose: 5000, hideProgressBar: false }
+      { autoClose: 5000 }
     );
   };
 
