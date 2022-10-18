@@ -1,4 +1,4 @@
-import { E, ERef } from '@endo/eventual-send';
+import { makeMarshal } from '@endo/marshal';
 import { makeAsyncIterableFromNotifier as iterateNotifier } from '@agoric/notifier';
 import { iterateLatest, makeFollower, Leader } from '@agoric/casting';
 import { dappConfig } from 'config';
@@ -49,7 +49,7 @@ const watchInstanceIds = async (
   walletUnserializer: Marshal<any>
 ) => {
   const f = makeFollower(dappConfig.INSTANCES_KEY, leader, {
-    unserializer: walletUnserializer,
+    unserializer: makeMarshal(undefined, slot => slot),
     proof: 'none',
   });
 
@@ -64,8 +64,6 @@ const watchInstanceIds = async (
         ([key, boardId]) =>
           [key.slice(INSTANCE_NAME_PREFIX.length), boardId] as [string, string]
       );
-
-    console.log('instance ids', PSMEntries);
 
     setters.setInstanceIds(PSMEntries);
 
@@ -102,8 +100,11 @@ declare type ContractSetters = {
   setGovernedParamsIndex: (params: [string, GovernedParams][]) => void;
 };
 
-export const watchContract = async (wallet: any, setters: ContractSetters) => {
-  const { leader, unserializer } = wallet;
+export const watchContract = async (
+  keplrConnection: { leader: any; unserializer: Marshal<any> },
+  setters: ContractSetters
+) => {
+  const { leader, unserializer } = keplrConnection;
 
   watchInstanceIds(leader, setters, unserializer).catch((err: Error) =>
     console.error('got loadInstanceIds err', err)
@@ -111,11 +112,11 @@ export const watchContract = async (wallet: any, setters: ContractSetters) => {
 };
 
 export const watchPurses = async (
-  wallet: ERef<any>,
+  keplrConnection: { pursesNotifier: any },
   setPurses: (purses: PursesJSONState[]) => void,
   mergeBrandToInfo: (entries: Iterable<Iterable<any>>) => void
 ) => {
-  const n = await E(wallet).getPursesNotifier();
+  const n = keplrConnection.pursesNotifier;
   for await (const purses of iterateNotifier(n)) {
     setPurses(purses);
 
@@ -131,15 +132,5 @@ export const watchPurses = async (
 
       mergeBrandToInfo([[brand, newInfo]]);
     }
-  }
-};
-
-export const watchOffers = async (
-  wallet: any,
-  setOffers: (offers: any) => void
-) => {
-  const offerNotifier = E(wallet).getOffersNotifier();
-  for await (const offers of iterateNotifier(offerNotifier)) {
-    setOffers(offers);
   }
 };

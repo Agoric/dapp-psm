@@ -60,7 +60,6 @@ const WalletBridge = () => {
   };
 
   const onBridgeReady = (ev: any) => {
-    console.log('got bridge ready', ev.detail);
     const {
       detail: { isDappApproved, requestDappConnection, addOffer },
     } = ev;
@@ -76,7 +75,6 @@ const WalletBridge = () => {
 
   const onBridgeMessage = (ev: any) => {
     const data = ev.detail?.data;
-    console.log('got bridge message', data);
     if (data?.type === 'agoric_dappApprovalChanged') {
       const isApproved = ev.detail?.data?.isDappApproved ?? false;
       setBridgeApproved(isApproved);
