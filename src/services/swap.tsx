@@ -1,29 +1,24 @@
 import { toast } from 'react-toastify';
-import { E } from '@endo/eventual-send';
-import type { ERef } from '@endo/eventual-send';
-import type { Id as ToastId } from 'react-toastify';
 
-import { defaultToastProperties, SwapError, SwapDirection } from 'store/swap';
+import { SwapError, SwapDirection } from 'store/swap';
 import type { PursesJSONState } from '@agoric/wallet-backend';
+import { WalletBridge } from 'store/app';
 
 type SwapContext = {
-  setToastId: (id: ToastId) => void;
-  setSwapped: (swapped: boolean) => void;
-  setCurrentOfferId: (id: number) => void;
+  wallet: WalletBridge;
   addError: (error: SwapError) => void;
-  swapped: boolean;
   instanceId?: string | null;
-  walletP: ERef<any>;
   fromPurse?: PursesJSONState | null;
   fromValue?: bigint | null;
   toPurse?: PursesJSONState | null;
   toValue?: bigint | null;
   swapDirection: SwapDirection;
+  setSwapped: (isSwapped: boolean) => void;
 };
 
 const makeSwapOffer = ({
+  wallet,
   instanceId,
-  walletP,
   fromPurse,
   fromValue,
   toPurse,
@@ -62,26 +57,14 @@ const makeSwapOffer = ({
   };
 
   console.info('OFFER CONFIG: ', offerConfig);
-  return E(walletP).addOffer(offerConfig);
+  wallet.addOffer(offerConfig);
 };
 
 export const doSwap = async (context: SwapContext) => {
-  const {
-    setToastId,
-    setSwapped,
-    setCurrentOfferId,
-    addError,
-    swapped,
-    toPurse,
-    fromPurse,
-    fromValue,
-    toValue,
-  } = context;
+  const { addError, toPurse, fromPurse, fromValue, toValue, setSwapped } =
+    context;
 
-  if (swapped) {
-    addError(SwapError.IN_PROGRESS);
-    return;
-  } else if (!(fromPurse && toPurse)) {
+  if (!(fromPurse && toPurse)) {
     addError(SwapError.NO_BRANDS);
     return;
   } else if (!(toValue && toValue > 0n && fromValue && fromValue > 0n)) {
@@ -89,16 +72,24 @@ export const doSwap = async (context: SwapContext) => {
     return;
   }
 
-  const offerId = await makeSwapOffer(context);
-  setCurrentOfferId(offerId);
+  await makeSwapOffer(context);
   setSwapped(true);
-  setToastId(
-    toast('Please approve the offer in your wallet.', {
-      ...defaultToastProperties,
-      type: toast.TYPE.INFO,
-      progress: undefined,
-      hideProgressBar: true,
-      autoClose: false,
-    })
+  setTimeout(() => {
+    setSwapped(false);
+  }, 3000);
+  toast.success(
+    <p>
+      Swap offer sent to{' '}
+      <a
+        className="underline text-blue-500"
+        href="https://wallet.agoric.app/wallet/"
+        target="_blank"
+        rel="noreferrer"
+      >
+        wallet.agoric.app/wallet/
+      </a>{' '}
+      for appproval.
+    </p>,
+    { hideProgressBar: false, autoClose: 5000 }
   );
 };

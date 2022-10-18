@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { makeReactDappWalletBridge } from '@agoric/web-components/react';
 import { Id, toast } from 'react-toastify';
 import { useSetAtom, useAtomValue } from 'jotai';

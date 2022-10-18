@@ -1,11 +1,6 @@
 import { E, ERef } from '@endo/eventual-send';
 import { makeAsyncIterableFromNotifier as iterateNotifier } from '@agoric/notifier';
-import {
-  iterateLatest,
-  makeLeader,
-  makeFollower,
-  Leader,
-} from '@agoric/casting';
+import { iterateLatest, makeFollower, Leader } from '@agoric/casting';
 import { dappConfig } from 'config';
 import type { Metrics, GovernedParams, BrandInfo } from 'store/app';
 import type { Marshal } from '@endo/marshal';
