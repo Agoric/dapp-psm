@@ -29,6 +29,8 @@ export const pursesAtom = atom<Array<PursesJSONState> | null>(null);
 /** A map of anchor brand petnames to their instance ids. */
 export const instanceIdsAtom = mapAtom<string, string>();
 
+export const brandBoardIdsAtom = mapAtom<string, string>();
+
 export type Metrics = {
   anchorPoolBalance: Amount;
   feePoolBalance: Amount;

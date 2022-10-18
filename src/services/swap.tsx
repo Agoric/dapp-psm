@@ -14,6 +14,8 @@ type SwapContext = {
   toValue?: bigint | null;
   swapDirection: SwapDirection;
   setSwapped: (isSwapped: boolean) => void;
+  fromBrandBoardId: string;
+  toBrandBoardId: string;
 };
 
 const makeSwapOffer = ({
@@ -24,6 +26,8 @@ const makeSwapOffer = ({
   toPurse,
   toValue,
   swapDirection,
+  fromBrandBoardId,
+  toBrandBoardId,
 }: SwapContext) => {
   assert(fromPurse, '"from" purse must be defined');
   assert(fromValue, '"from" value must be defined');
@@ -43,12 +47,14 @@ const makeSwapOffer = ({
     proposalTemplate: {
       give: {
         In: {
+          brand: fromBrandBoardId,
           pursePetname: fromPurse.pursePetname,
           value: Number(fromValue),
         },
       },
       want: {
         Out: {
+          brand: toBrandBoardId,
           pursePetname: toPurse.pursePetname,
           value: Number(toValue),
         },

@@ -16,6 +16,7 @@ import {
   governedParamsIndexAtom,
   metricsIndexAtom,
   keplrConnectionAtom,
+  brandBoardIdsAtom,
 } from 'store/app';
 import { watchContract, watchPurses } from 'utils/updates';
 
@@ -31,6 +32,7 @@ const KeplrConnection = () => {
   const setMetricsIndex = useSetAtom(metricsIndexAtom);
   const setGovernedParamsIndex = useSetAtom(governedParamsIndexAtom);
   const setInstanceIds = useSetAtom(instanceIdsAtom);
+  const setBrandBoardIds = useSetAtom(brandBoardIdsAtom);
 
   useEffect(() => {
     if (keplrConnection === null) return;
@@ -43,6 +45,7 @@ const KeplrConnection = () => {
       setMetricsIndex,
       setGovernedParamsIndex,
       setInstanceIds,
+      setBrandBoardIds,
     });
   }, [
     keplrConnection,
@@ -52,6 +55,7 @@ const KeplrConnection = () => {
     setMetricsIndex,
     setGovernedParamsIndex,
     setInstanceIds,
+    setBrandBoardIds,
   ]);
 
   const connect = async () => {
@@ -75,7 +79,7 @@ const KeplrConnection = () => {
         case Errors.noSmartWallet:
           toast.error(
             <p>
-              No Agoric smart wallet found for this address. Try creating one at
+              No Agoric smart wallet found for this address. Try creating one at{' '}
               <a
                 className="underline text-blue-500"
                 href="https://wallet.agoric.app/wallet/"
@@ -102,6 +106,7 @@ const KeplrConnection = () => {
     }
     return 'Connect Keplr';
   })();
+
   return (
     <>
       <button

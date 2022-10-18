@@ -16,6 +16,7 @@ import {
   instanceIdsAtom,
   keplrConnectionAtom,
   bridgeApprovedAtom,
+  brandBoardIdsAtom,
 } from 'store/app';
 import { instanceIdAtom } from 'store/swap';
 import {
@@ -50,6 +51,7 @@ const Swap = () => {
   const fromPurse = useAtomValue(fromPurseAtom);
   const toPurse = useAtomValue(toPurseAtom);
   const instanceIds = useAtomValue(instanceIdsAtom);
+  const brandBoardIds = useAtomValue(brandBoardIdsAtom);
 
   const anchorPetnames = [...instanceIds.keys()];
   const areAnchorsLoaded =
@@ -59,7 +61,8 @@ const Swap = () => {
       const brand = metrics?.anchorPoolBalance.brand;
       const brandInfo = brand && brandToInfo.get(brand);
       const governedParams = governedParamsIndex.get(petname);
-      return metrics && brandInfo && governedParams;
+      const anchorBoardId = brandBoardIds.get(petname);
+      return metrics && brandInfo && governedParams && anchorBoardId;
     });
 
   const switchToAndFrom = useCallback(() => {
@@ -70,8 +73,23 @@ const Swap = () => {
     }
   }, [swapDirection, setSwapDirection]);
 
+  const fromBrandBoardId = brandBoardIds.get(fromPurse?.brandPetname);
+  const toBrandBoardId = brandBoardIds.get(toPurse?.brandPetname);
+
+  console.log('frompurse', fromPurse);
+  console.log('toPurse', toPurse);
+  console.log('anchorBoardIds', brandBoardIds);
+
   const handleSwap = useCallback(() => {
-    if (!areAnchorsLoaded || !bridgeApproved || !wallet || swapped) return;
+    if (
+      !areAnchorsLoaded ||
+      !bridgeApproved ||
+      !wallet ||
+      !fromBrandBoardId ||
+      !toBrandBoardId ||
+      swapped
+    )
+      return;
 
     const fromValue = fromAmount?.value;
     const toValue = toAmount?.value;
@@ -86,6 +104,8 @@ const Swap = () => {
       toPurse,
       toValue,
       swapDirection,
+      fromBrandBoardId,
+      toBrandBoardId,
     });
   }, [
     setSwapped,
@@ -100,6 +120,8 @@ const Swap = () => {
     toPurse,
     wallet,
     bridgeApproved,
+    fromBrandBoardId,
+    toBrandBoardId,
   ]);
 
   useEffect(() => {

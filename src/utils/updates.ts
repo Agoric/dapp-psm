@@ -32,15 +32,39 @@ const watchMetrics = async (
   leader: Leader,
   unserializer: Marshal<any>,
   setMetricsIndex: ContractSetters['setMetricsIndex'],
+  setBrandBoardIds: ContractSetters['setBrandBoardIds'],
   anchorPetname: string
 ) => {
   // E.g. ':published.psm.IST.AUSD.metrics'
   const spec = dappConfig.INSTANCE_PREFIX + anchorPetname + '.metrics';
   const f = makeFollower(spec, leader, { unserializer });
+  const boardIdFollower = makeFollower(spec, leader, {
+    unserializer: makeMarshal(undefined, slot => slot),
+  });
 
-  for await (const { value } of iterateLatest(f)) {
-    setMetricsIndex([[anchorPetname, value]]);
-  }
+  const watch = async () => {
+    for await (const { value } of iterateLatest(f)) {
+      console.log('got metrics', value);
+      setMetricsIndex([[anchorPetname, value]]);
+    }
+  };
+
+  const watchBoardId = async () => {
+    for await (const { value } of iterateLatest(boardIdFollower)) {
+      const anchorBoardId = value.anchorPoolBalance.brand;
+      const mintedBoardId = value.mintedPoolBalance.brand;
+      console.log('got board id for anchor', anchorPetname, anchorBoardId);
+      console.log('got board id for minted', 'IST', mintedBoardId);
+      setBrandBoardIds([
+        [anchorPetname, anchorBoardId],
+        ['IST', mintedBoardId],
+      ]);
+      break;
+    }
+  };
+
+  watch();
+  watchBoardId();
 };
 
 const watchInstanceIds = async (
@@ -76,6 +100,7 @@ const watchInstanceIds = async (
           leader,
           walletUnserializer,
           setters.setMetricsIndex,
+          setters.setBrandBoardIds,
           anchorPetname
         ).catch(e =>
           console.error('Error watching metrics for', anchorPetname, e)
@@ -98,6 +123,7 @@ declare type ContractSetters = {
   setInstanceIds: (ids: [string, string][]) => void;
   setMetricsIndex: (metrics: [string, Metrics][]) => void;
   setGovernedParamsIndex: (params: [string, GovernedParams][]) => void;
+  setBrandBoardIds: (ids: [string, string][]) => void;
 };
 
 export const watchContract = async (
