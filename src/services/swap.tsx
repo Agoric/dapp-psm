@@ -16,6 +16,7 @@ type SwapContext = {
   swapDirection: SwapDirection;
   setSwapped: (isSwapped: boolean) => void;
   marshal: any;
+  walletUiUrl: string;
 };
 
 const makeSwapOffer = async ({
@@ -67,8 +68,15 @@ const makeSwapOffer = async ({
 };
 
 export const doSwap = async (context: SwapContext) => {
-  const { addError, toPurse, fromPurse, fromValue, toValue, setSwapped } =
-    context;
+  const {
+    addError,
+    toPurse,
+    fromPurse,
+    fromValue,
+    toValue,
+    setSwapped,
+    walletUiUrl,
+  } = context;
 
   if (!(fromPurse && toPurse)) {
     addError(SwapError.NO_BRANDS);
@@ -88,11 +96,11 @@ export const doSwap = async (context: SwapContext) => {
       Swap offer sent to{' '}
       <a
         className="underline text-blue-500"
-        href="https://wallet.agoric.app/wallet/"
+        href={walletUiUrl}
         target="_blank"
         rel="noreferrer"
       >
-        wallet.agoric.app/wallet/
+        {walletUiUrl}
       </a>{' '}
       for appproval.
     </p>,

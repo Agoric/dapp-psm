@@ -16,6 +16,7 @@ import {
   instanceIdsAtom,
   keplrConnectionAtom,
   bridgeApprovedAtom,
+  walletUiUrlAtom,
 } from 'store/app';
 import { instanceIdAtom } from 'store/swap';
 import {
@@ -50,6 +51,7 @@ const Swap = () => {
   const fromPurse = useAtomValue(fromPurseAtom);
   const toPurse = useAtomValue(toPurseAtom);
   const instanceIds = useAtomValue(instanceIdsAtom);
+  const walletUiUrl = useAtomValue(walletUiUrlAtom);
 
   const anchorPetnames = [...instanceIds.keys()];
   const areAnchorsLoaded =
@@ -87,8 +89,10 @@ const Swap = () => {
       toValue,
       swapDirection,
       marshal: keplrConnection.unserializer,
+      walletUiUrl,
     });
   }, [
+    walletUiUrl,
     setSwapped,
     swapped,
     addError,

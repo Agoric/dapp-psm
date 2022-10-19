@@ -16,6 +16,14 @@ export type WalletBridge = {
 
 export const bridgeApprovedAtom = atom(false);
 
+export const bridgeUrlAtom = atom<URL | null>(null);
+
+export const walletUiUrlAtom = atom(get => {
+  const bridgeUrl = get(bridgeUrlAtom);
+
+  return bridgeUrl ? bridgeUrl.origin + '/wallet/' : '';
+});
+
 export const brandToInfoAtom = mapAtom<Brand, BrandInfo>();
 
 export const walletAtom = atom<WalletBridge | null>(null);

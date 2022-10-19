@@ -1,8 +1,14 @@
 import React, { useRef } from 'react';
 import { makeReactDappWalletBridge } from '@agoric/web-components/react';
 import { Id, toast } from 'react-toastify';
-import { useSetAtom, useAtomValue } from 'jotai';
-import { walletAtom, bridgeApprovedAtom, keplrConnectionAtom } from 'store/app';
+import { useSetAtom, useAtomValue, useAtom } from 'jotai';
+import {
+  walletAtom,
+  bridgeApprovedAtom,
+  keplrConnectionAtom,
+  bridgeUrlAtom,
+  walletUiUrlAtom,
+} from 'store/app';
 
 // Create a wrapper for dapp-wallet-bridge that is specific to
 // the app's instance of React.
@@ -14,6 +20,8 @@ const WalletBridge = () => {
   const keplrConnection = useAtomValue(keplrConnectionAtom);
   const warningToastId = useRef<Id | null>(null);
   const connectionSuccessfulToastId = useRef<Id | null>(null);
+  const [bridgeUrl, setBridgeUrl] = useAtom(bridgeUrlAtom);
+  const walletUiUrl = useAtomValue(walletUiUrlAtom);
 
   const clearWarningToast = () =>
     warningToastId.current && toast.dismiss(warningToastId.current);
@@ -29,11 +37,11 @@ const WalletBridge = () => {
         Dapp is in read-only mode. Enable the connection at{' '}
         <a
           className="underline text-blue-500"
-          href="https://wallet.agoric.app/wallet/"
+          href={walletUiUrl}
           target="_blank"
           rel="noreferrer"
         >
-          wallet.agoric.app/wallet/
+          {walletUiUrl}
         </a>{' '}
         to perform swaps.
       </p>
@@ -47,11 +55,11 @@ const WalletBridge = () => {
         Successfully connected to Agoric wallet at{' '}
         <a
           className="underline text-blue-500"
-          href="https://wallet.agoric.app/wallet/"
+          href={walletUiUrl}
           target="_blank"
           rel="noreferrer"
         >
-          wallet.agoric.app/wallet/
+          {walletUiUrl}
         </a>
         .
       </p>,
@@ -86,23 +94,56 @@ const WalletBridge = () => {
     }
   };
 
+  const onBridgeLocated = (ev: any) => {
+    const bridgeUrl = new URL(ev.detail?.bridgeLocation);
+    setBridgeUrl(bridgeUrl);
+  };
+
   const onError = () => {
-    toast.error(
-      <div>
-        <p>
-          Error connecting to Agoric wallet bridge. Check{' '}
-          <a
-            className="underline text-blue-500"
-            href="https://wallet.agoric.app/locator/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            wallet.agoric.app/locator/
-          </a>
-          ?
-        </p>
-      </div>
-    );
+    if (bridgeUrl !== null) {
+      toast.error(
+        <div>
+          <p>
+            Error connecting to Agoric wallet bridge at{' '}
+            <a
+              className="underline text-blue-500"
+              href={bridgeUrl.origin}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {bridgeUrl.origin}
+            </a>
+            . Check{' '}
+            <a
+              className="underline text-blue-500"
+              href="https://wallet.agoric.app/locator/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              https://wallet.agoric.app/locator/
+            </a>
+            ?
+          </p>
+        </div>
+      );
+    } else {
+      toast.error(
+        <div>
+          <p>
+            Could not locate Agoric wallet bridge. Check{' '}
+            <a
+              className="underline text-blue-500"
+              href="https://wallet.agoric.app/locator/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              https://wallet.agoric.app/locator/
+            </a>
+            ?
+          </p>
+        </div>
+      );
+    }
   };
 
   return (
@@ -111,6 +152,7 @@ const WalletBridge = () => {
         <DappWalletBridge
           onBridgeMessage={onBridgeMessage}
           onBridgeReady={onBridgeReady}
+          onBridgeLocated={onBridgeLocated}
           onError={onError}
           address={keplrConnection.address}
           chainId={keplrConnection.chainId}

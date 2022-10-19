@@ -22,6 +22,8 @@ import { watchContract, watchPurses } from 'utils/updates';
 import 'styles/globals.css';
 import clsx from 'clsx';
 
+const Ollinet = 'https://ollinet.agoric.net/network-config';
+
 const KeplrConnection = () => {
   const [connectionInProgress, setConnectionInProgress] = useState(false);
   const [keplrConnection, setKeplrConnection] = useAtom(keplrConnectionAtom);
@@ -59,7 +61,7 @@ const KeplrConnection = () => {
     let connection;
     setConnectionInProgress(true);
     try {
-      connection = await makeAgoricKeplrConnection();
+      connection = await makeAgoricKeplrConnection(Ollinet);
       setKeplrConnection(connection);
     } catch (e: any) {
       switch (e.message) {
