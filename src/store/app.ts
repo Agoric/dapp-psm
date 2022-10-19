@@ -1,10 +1,12 @@
 import { atom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 import type { Amount, Brand, DisplayInfo } from '@agoric/ertp';
 import type { PursesJSONState } from '@agoric/wallet-backend';
 import type { Ratio } from '@agoric/zoe/src/contractSupport';
 
 import { makeDisplayFunctions } from 'utils/displayFunctions';
 import { mapAtom } from 'utils/helpers';
+import { networkConfigs } from 'config';
 
 export type BrandInfo = DisplayInfo<'nat'> & {
   petname: string;
@@ -33,6 +35,11 @@ export const keplrConnectionAtom = atom<any | null>(null);
 export const offersAtom = atom<Array<any> | null>(null);
 
 export const pursesAtom = atom<Array<PursesJSONState> | null>(null);
+
+export const networkConfigAtom = atomWithStorage(
+  'agoric-network-config',
+  networkConfigs.mainnet
+);
 
 /** A map of anchor brand petnames to their instance ids. */
 export const instanceIdsAtom = mapAtom<string, string>();

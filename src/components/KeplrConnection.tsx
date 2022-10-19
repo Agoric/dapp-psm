@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { toast } from 'react-toastify';
 import { Oval } from 'react-loader-spinner';
 import {
@@ -16,13 +16,13 @@ import {
   governedParamsIndexAtom,
   metricsIndexAtom,
   keplrConnectionAtom,
+  networkConfigAtom,
 } from 'store/app';
 import { watchContract, watchPurses } from 'utils/updates';
+import NetworkDropdown from 'components/NetworkDropdown';
 
 import 'styles/globals.css';
 import clsx from 'clsx';
-
-const Ollinet = 'https://ollinet.agoric.net/network-config';
 
 const KeplrConnection = () => {
   const [connectionInProgress, setConnectionInProgress] = useState(false);
@@ -33,6 +33,7 @@ const KeplrConnection = () => {
   const setMetricsIndex = useSetAtom(metricsIndexAtom);
   const setGovernedParamsIndex = useSetAtom(governedParamsIndexAtom);
   const setInstanceIds = useSetAtom(instanceIdsAtom);
+  const networkConfig = useAtomValue(networkConfigAtom);
 
   useEffect(() => {
     if (keplrConnection === null) return;
@@ -61,7 +62,7 @@ const KeplrConnection = () => {
     let connection;
     setConnectionInProgress(true);
     try {
-      connection = await makeAgoricKeplrConnection(Ollinet);
+      connection = await makeAgoricKeplrConnection(networkConfig.url);
       setKeplrConnection(connection);
     } catch (e: any) {
       switch (e.message) {
@@ -106,7 +107,10 @@ const KeplrConnection = () => {
   })();
 
   return (
-    <>
+    <div className="flex flex-row space-x-2">
+      <div className="flex flex-row align-middle">
+        <NetworkDropdown />
+      </div>
       <button
         className={clsx(
           'border border-primary group inline-flex items-center rounded-md px-3 py-2 bg-transparent text-base font-medium text-primary',
@@ -121,7 +125,7 @@ const KeplrConnection = () => {
           </div>
         )}
       </button>
-    </>
+    </div>
   );
 };
 
