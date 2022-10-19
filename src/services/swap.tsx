@@ -43,10 +43,8 @@ const makeSwapOffer = async ({
   const serializedInstance = await E(marshal).serialize(instanceId);
 
   const offerConfig = {
-    invitationMaker: {
-      method,
-    },
-    instanceHandleBoardId: serializedInstance,
+    publicInvitationMaker: method,
+    instanceHandle: serializedInstance,
     proposalTemplate: {
       give: {
         In: {

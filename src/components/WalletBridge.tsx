@@ -95,8 +95,37 @@ const WalletBridge = () => {
   };
 
   const onBridgeLocated = (ev: any) => {
-    const bridgeUrl = new URL(ev.detail?.bridgeLocation);
-    setBridgeUrl(bridgeUrl);
+    const location = ev.detail?.bridgeLocation;
+    try {
+      const bridgeUrl = new URL(location);
+      setBridgeUrl(bridgeUrl);
+    } catch {
+      toast.error(
+        <div>
+          <p>
+            Error connecting to Agoric wallet bridge at{' '}
+            <a
+              className="underline text-blue-500"
+              href={location}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {location}
+            </a>
+            . Check{' '}
+            <a
+              className="underline text-blue-500"
+              href="https://wallet.agoric.app/locator/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              https://wallet.agoric.app/locator/
+            </a>
+            ?
+          </p>
+        </div>
+      );
+    }
   };
 
   const onError = () => {
