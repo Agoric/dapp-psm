@@ -15,7 +15,7 @@ import {
   instanceIdsAtom,
   governedParamsIndexAtom,
   metricsIndexAtom,
-  keplrConnectionAtom,
+  chainConnectionAtom,
   networkConfigAtom,
 } from 'store/app';
 import { watchContract, watchPurses } from 'utils/updates';
@@ -24,9 +24,9 @@ import NetworkDropdown from 'components/NetworkDropdown';
 import 'styles/globals.css';
 import clsx from 'clsx';
 
-const KeplrConnection = () => {
+const ChainConnection = () => {
   const [connectionInProgress, setConnectionInProgress] = useState(false);
-  const [keplrConnection, setKeplrConnection] = useAtom(keplrConnectionAtom);
+  const [chainConnection, setChainConnection] = useAtom(chainConnectionAtom);
   const mergeBrandToInfo = useSetAtom(brandToInfoAtom);
   const setPurses = useSetAtom(pursesAtom);
   const setOffers = useSetAtom(offersAtom);
@@ -36,19 +36,19 @@ const KeplrConnection = () => {
   const networkConfig = useAtomValue(networkConfigAtom);
 
   useEffect(() => {
-    if (keplrConnection === null) return;
+    if (chainConnection === null) return;
 
-    watchPurses(keplrConnection, setPurses, mergeBrandToInfo).catch(
+    watchPurses(chainConnection, setPurses, mergeBrandToInfo).catch(
       (err: Error) => console.error('got watchPurses err', err)
     );
 
-    watchContract(keplrConnection, {
+    watchContract(chainConnection, {
       setMetricsIndex,
       setGovernedParamsIndex,
       setInstanceIds,
     });
   }, [
-    keplrConnection,
+    chainConnection,
     mergeBrandToInfo,
     setPurses,
     setOffers,
@@ -58,12 +58,12 @@ const KeplrConnection = () => {
   ]);
 
   const connect = async () => {
-    if (connectionInProgress || keplrConnection) return;
+    if (connectionInProgress || chainConnection) return;
     let connection;
     setConnectionInProgress(true);
     try {
       connection = await makeAgoricKeplrConnection(networkConfig.url);
-      setKeplrConnection(connection);
+      setChainConnection(connection);
     } catch (e: any) {
       switch (e.message) {
         case Errors.enableKeplr:
@@ -100,7 +100,7 @@ const KeplrConnection = () => {
   const status = (() => {
     if (connectionInProgress) {
       return 'Connecting';
-    } else if (keplrConnection) {
+    } else if (chainConnection) {
       return 'Keplr Connected';
     }
     return 'Connect Keplr';
@@ -114,7 +114,7 @@ const KeplrConnection = () => {
       <button
         className={clsx(
           'border border-primary group inline-flex items-center rounded-md px-3 py-2 bg-transparent text-base font-medium text-primary',
-          !connectionInProgress && !keplrConnection && 'hover:bg-gray-100'
+          !connectionInProgress && !chainConnection && 'hover:bg-gray-100'
         )}
         onClick={connect}
       >
@@ -129,4 +129,4 @@ const KeplrConnection = () => {
   );
 };
 
-export default KeplrConnection;
+export default ChainConnection;

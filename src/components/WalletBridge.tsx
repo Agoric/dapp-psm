@@ -5,7 +5,7 @@ import { useSetAtom, useAtomValue, useAtom } from 'jotai';
 import {
   walletAtom,
   bridgeApprovedAtom,
-  keplrConnectionAtom,
+  chainConnectionAtom,
   bridgeUrlAtom,
   walletUiUrlAtom,
 } from 'store/app';
@@ -17,7 +17,7 @@ const DappWalletBridge = makeReactDappWalletBridge(React);
 const WalletBridge = () => {
   const setBridgeApproved = useSetAtom(bridgeApprovedAtom);
   const setWallet = useSetAtom(walletAtom);
-  const keplrConnection = useAtomValue(keplrConnectionAtom);
+  const chainConnection = useAtomValue(chainConnectionAtom);
   const warningToastId = useRef<Id | null>(null);
   const connectionSuccessfulToastId = useRef<Id | null>(null);
   const [bridgeUrl, setBridgeUrl] = useAtom(bridgeUrlAtom);
@@ -177,14 +177,14 @@ const WalletBridge = () => {
 
   return (
     <div className="hidden">
-      {keplrConnection && (
+      {chainConnection && (
         <DappWalletBridge
           onBridgeMessage={onBridgeMessage}
           onBridgeReady={onBridgeReady}
           onBridgeLocated={onBridgeLocated}
           onError={onError}
-          address={keplrConnection.address}
-          chainId={keplrConnection.chainId}
+          address={chainConnection.address}
+          chainId={chainConnection.chainId}
         />
       )}
     </div>

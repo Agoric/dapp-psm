@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import WalletBridge from 'components/WalletBridge';
 import Swap from 'components/Swap';
-import KeplrConnection from 'components/KeplrConnection';
+import ChainConnection from 'components/ChainConnection';
 import { INTER_LOGO } from 'assets/assets';
 
 import 'styles/globals.css';
@@ -30,7 +30,7 @@ const App = () => {
             />
           </a>
           <WalletBridge />
-          <KeplrConnection />
+          <ChainConnection />
         </motion.div>
         <motion.div className="min-w-screen container mx-auto flex justify-center mt-16">
           <Swap />

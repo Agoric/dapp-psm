@@ -101,10 +101,10 @@ declare type ContractSetters = {
 };
 
 export const watchContract = async (
-  keplrConnection: { leader: any; unserializer: Marshal<any> },
+  chainConnection: { leader: any; unserializer: Marshal<any> },
   setters: ContractSetters
 ) => {
-  const { leader, unserializer } = keplrConnection;
+  const { leader, unserializer } = chainConnection;
 
   watchInstanceIds(leader, setters, unserializer).catch((err: Error) =>
     console.error('got loadInstanceIds err', err)
@@ -112,11 +112,11 @@ export const watchContract = async (
 };
 
 export const watchPurses = async (
-  keplrConnection: { pursesNotifier: any },
+  chainConnection: { pursesNotifier: any },
   setPurses: (purses: PursesJSONState[]) => void,
   mergeBrandToInfo: (entries: Iterable<Iterable<any>>) => void
 ) => {
-  const n = keplrConnection.pursesNotifier;
+  const n = chainConnection.pursesNotifier;
   for await (const purses of iterateNotifier(n)) {
     setPurses(purses);
 

@@ -30,7 +30,7 @@ export const brandToInfoAtom = mapAtom<Brand, BrandInfo>();
 
 export const walletAtom = atom<WalletBridge | null>(null);
 
-export const keplrConnectionAtom = atom<any | null>(null);
+export const chainConnectionAtom = atom<any | null>(null);
 
 export const offersAtom = atom<Array<any> | null>(null);
 

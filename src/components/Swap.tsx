@@ -14,7 +14,7 @@ import {
   governedParamsIndexAtom,
   metricsIndexAtom,
   instanceIdsAtom,
-  keplrConnectionAtom,
+  chainConnectionAtom,
   bridgeApprovedAtom,
   walletUiUrlAtom,
 } from 'store/app';
@@ -31,12 +31,13 @@ import {
   SwapError,
   errorsAtom,
 } from 'store/swap';
-import { doSwap } from 'services/swap';
+import { makeSwapOffer } from 'services/swap';
+import { toast } from 'react-toastify';
 
 const Swap = () => {
   const [swapped, setSwapped] = useState(false);
   const bridgeApproved = useAtomValue(bridgeApprovedAtom);
-  const keplrConnection = useAtomValue(keplrConnectionAtom);
+  const chainConnection = useAtomValue(chainConnectionAtom);
   const brandToInfo = useAtomValue(brandToInfoAtom);
   const metricsIndex = useAtomValue(metricsIndexAtom);
   const governedParamsIndex = useAtomValue(governedParamsIndexAtom);
@@ -72,25 +73,66 @@ const Swap = () => {
     }
   }, [swapDirection, setSwapDirection]);
 
-  const handleSwap = useCallback(() => {
+  const handleSwap = useCallback(async () => {
     if (!areAnchorsLoaded || !bridgeApproved || !wallet || swapped) return;
 
     const fromValue = fromAmount?.value;
     const toValue = toAmount?.value;
 
-    doSwap({
-      setSwapped,
-      addError,
-      instanceId,
-      wallet,
-      fromPurse,
-      fromValue,
-      toPurse,
-      toValue,
-      swapDirection,
-      marshal: keplrConnection.unserializer,
-      walletUiUrl,
-    });
+    if (!(fromPurse && toPurse && instanceId)) {
+      addError(SwapError.NO_BRANDS);
+      return;
+    } else if (!(toValue && toValue > 0n && fromValue && fromValue > 0n)) {
+      addError(SwapError.EMPTY_AMOUNTS);
+      return;
+    }
+
+    try {
+      await makeSwapOffer({
+        instanceId,
+        wallet,
+        fromPurse,
+        fromValue,
+        toPurse,
+        toValue,
+        swapDirection,
+        marshal: chainConnection.unserializer,
+      });
+      setSwapped(true);
+      setTimeout(() => {
+        setSwapped(false);
+      }, 3000);
+      toast.success(
+        <p>
+          Swap offer sent to{' '}
+          <a
+            className="underline text-blue-500"
+            href={walletUiUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {walletUiUrl}
+          </a>{' '}
+          for appproval.
+        </p>,
+        { hideProgressBar: false, autoClose: 5000 }
+      );
+    } catch (e) {
+      toast.error(
+        <p>
+          A problem occurred when sending the swap offer to{' '}
+          <a
+            className="underline text-blue-500"
+            href={walletUiUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {walletUiUrl}
+          </a>
+          .
+        </p>
+      );
+    }
   }, [
     walletUiUrl,
     setSwapped,
@@ -105,7 +147,7 @@ const Swap = () => {
     toPurse,
     wallet,
     bridgeApproved,
-    keplrConnection,
+    chainConnection,
   ]);
 
   useEffect(() => {
@@ -171,7 +213,7 @@ const Swap = () => {
           </a>
         </span>
       </motion.div>
-      {keplrConnection ? (
+      {chainConnection ? (
         form
       ) : (
         <CustomLoader text="Connect Keplr to continue" />
