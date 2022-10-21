@@ -20,12 +20,16 @@ export const bridgeApprovedAtom = atom(false);
 
 const prodBridgeHref = 'https://wallet.agoric.app/wallet/bridge.html';
 const localBridgeHref = 'http://localhost:3000/wallet/bridge.html';
+const branchBridgeHref = (branchName: string) =>
+  `https://${branchName}.wallet-app.pages.dev/wallet/bridge.html`;
 
 const usp = new URLSearchParams(window.location.search);
 const wallet = usp.get('wallet');
 let bridgeHref = prodBridgeHref;
 if (wallet === 'local') {
   bridgeHref = localBridgeHref;
+} else if (wallet) {
+  bridgeHref = branchBridgeHref(wallet);
 }
 
 export const bridgeHrefAtom = atom<string>(bridgeHref);
