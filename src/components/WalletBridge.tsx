@@ -11,6 +11,33 @@ import {
   walletUiHrefAtom,
 } from 'store/app';
 
+type BridgeReadyMessage = {
+  detail: {
+    data: {
+      type: string;
+    };
+    isDappApproved: boolean;
+    requestDappConnection: (petname: string) => void;
+    addOffer: (offer: any) => void;
+  };
+};
+
+type BridgeMessage = {
+  detail: {
+    data: {
+      type: string;
+      isDappApproved: boolean;
+    };
+  };
+};
+
+type BridgeError = {
+  detail: {
+    type: string;
+    e: Error;
+  };
+};
+
 // Create a wrapper for dapp-wallet-bridge that is specific to
 // the app's instance of React.
 const DappWalletBridge = makeReactDappWalletBridge(React);
@@ -67,7 +94,7 @@ const WalletBridge = () => {
     );
   };
 
-  const onBridgeReady = (ev: any) => {
+  const onBridgeReady = (ev: BridgeReadyMessage) => {
     const {
       detail: { isDappApproved, requestDappConnection, addOffer },
     } = ev;
@@ -81,8 +108,8 @@ const WalletBridge = () => {
     setWallet({ addOffer });
   };
 
-  const onError = (ev: any) => {
-    const message = ev?.detail?.e?.message;
+  const onError = (ev: BridgeError) => {
+    const message = ev.detail.e.message;
     toast.error(
       <div>
         <p>
@@ -101,13 +128,13 @@ const WalletBridge = () => {
     );
   };
 
-  const onBridgeMessage = (ev: any) => {
-    const data = ev.detail?.data;
-    const type = data?.type;
+  const onBridgeMessage = (ev: BridgeMessage) => {
+    const data = ev.detail.data;
+    const type = data.type;
     switch (type) {
       case BridgeProtocol.dappApprovalChanged:
-        setBridgeApproved(data?.isDappApproved);
-        if (data?.isDappApproved) {
+        setBridgeApproved(data.isDappApproved);
+        if (data.isDappApproved) {
           showConnectionSuccessfulToast();
         } else {
           showWarningToast();
