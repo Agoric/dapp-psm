@@ -18,10 +18,20 @@ export type WalletBridge = {
 
 export const bridgeApprovedAtom = atom(false);
 
-export const bridgeUrlAtom = atom<URL | null>(null);
+const prodBridgeHref = 'https://wallet.agoric.app/wallet/bridge.html';
+const localBridgeHref = 'http://localhost:3000/wallet/bridge.html';
 
-export const walletUiUrlAtom = atom(get => {
-  const bridgeUrl = get(bridgeUrlAtom);
+const usp = new URLSearchParams(window.location.search);
+const wallet = usp.get('wallet');
+let bridgeHref = prodBridgeHref;
+if (wallet === 'local') {
+  bridgeHref = localBridgeHref;
+}
+
+export const bridgeHrefAtom = atom<string>(bridgeHref);
+
+export const walletUiHrefAtom = atom(get => {
+  const bridgeUrl = new URL(get(bridgeHrefAtom));
 
   return bridgeUrl ? bridgeUrl.origin + '/wallet/' : '';
 });

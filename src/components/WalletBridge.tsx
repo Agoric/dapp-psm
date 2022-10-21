@@ -1,13 +1,14 @@
 import React, { useRef } from 'react';
+import { BridgeProtocol } from '@agoric/web-components';
 import { makeReactDappWalletBridge } from '@agoric/web-components/react';
 import { Id, toast } from 'react-toastify';
-import { useSetAtom, useAtomValue, useAtom } from 'jotai';
+import { useSetAtom, useAtomValue } from 'jotai';
 import {
   walletAtom,
   bridgeApprovedAtom,
   chainConnectionAtom,
-  bridgeUrlAtom,
-  walletUiUrlAtom,
+  bridgeHrefAtom,
+  walletUiHrefAtom,
 } from 'store/app';
 
 // Create a wrapper for dapp-wallet-bridge that is specific to
@@ -20,8 +21,8 @@ const WalletBridge = () => {
   const chainConnection = useAtomValue(chainConnectionAtom);
   const warningToastId = useRef<Id | null>(null);
   const connectionSuccessfulToastId = useRef<Id | null>(null);
-  const [bridgeUrl, setBridgeUrl] = useAtom(bridgeUrlAtom);
-  const walletUiUrl = useAtomValue(walletUiUrlAtom);
+  const bridgeHref = useAtomValue(bridgeHrefAtom);
+  const walletUiHref = useAtomValue(walletUiHrefAtom);
 
   const clearWarningToast = () =>
     warningToastId.current && toast.dismiss(warningToastId.current);
@@ -37,11 +38,11 @@ const WalletBridge = () => {
         Dapp is in read-only mode. Enable the connection at{' '}
         <a
           className="underline text-blue-500"
-          href={walletUiUrl}
+          href={walletUiHref}
           target="_blank"
           rel="noreferrer"
         >
-          {walletUiUrl}
+          {walletUiHref}
         </a>{' '}
         to perform swaps.
       </p>
@@ -55,13 +56,12 @@ const WalletBridge = () => {
         Successfully connected to Agoric wallet at{' '}
         <a
           className="underline text-blue-500"
-          href={walletUiUrl}
+          href={walletUiHref}
           target="_blank"
           rel="noreferrer"
         >
-          {walletUiUrl}
+          {walletUiHref}
         </a>
-        .
       </p>,
       { autoClose: 5000 }
     );
@@ -81,97 +81,40 @@ const WalletBridge = () => {
     setWallet({ addOffer });
   };
 
+  const onError = (ev: any) => {
+    const message = ev?.detail?.e?.message;
+    toast.error(
+      <div>
+        <p>
+          Could not connect to Agoric wallet at{' '}
+          <a
+            className="underline text-blue-500"
+            href={walletUiHref}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {walletUiHref}
+          </a>
+          {message && `: ${message}`}
+        </p>
+      </div>
+    );
+  };
+
   const onBridgeMessage = (ev: any) => {
     const data = ev.detail?.data;
-    if (data?.type === 'agoric_dappApprovalChanged') {
-      const isApproved = ev.detail?.data?.isDappApproved ?? false;
-      setBridgeApproved(isApproved);
-      if (isApproved) {
-        showConnectionSuccessfulToast();
-      } else {
-        showWarningToast();
-      }
-    }
-  };
-
-  const onBridgeLocated = (ev: any) => {
-    const location = ev.detail?.bridgeLocation;
-    try {
-      const bridgeUrl = new URL(location);
-      setBridgeUrl(bridgeUrl);
-    } catch {
-      toast.error(
-        <div>
-          <p>
-            Error connecting to Agoric wallet bridge at{' '}
-            <a
-              className="underline text-blue-500"
-              href={location}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {location}
-            </a>
-            . Check{' '}
-            <a
-              className="underline text-blue-500"
-              href="https://wallet.agoric.app/locator/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              https://wallet.agoric.app/locator/
-            </a>
-            ?
-          </p>
-        </div>
-      );
-    }
-  };
-
-  const onError = () => {
-    if (bridgeUrl !== null) {
-      toast.error(
-        <div>
-          <p>
-            Error connecting to Agoric wallet bridge at{' '}
-            <a
-              className="underline text-blue-500"
-              href={bridgeUrl.origin}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {bridgeUrl.origin}
-            </a>
-            . Check{' '}
-            <a
-              className="underline text-blue-500"
-              href="https://wallet.agoric.app/locator/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              https://wallet.agoric.app/locator/
-            </a>
-            ?
-          </p>
-        </div>
-      );
-    } else {
-      toast.error(
-        <div>
-          <p>
-            Could not locate Agoric wallet bridge. Check{' '}
-            <a
-              className="underline text-blue-500"
-              href="https://wallet.agoric.app/locator/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              https://wallet.agoric.app/locator/
-            </a>
-            ?
-          </p>
-        </div>
-      );
+    const type = data?.type;
+    switch (type) {
+      case BridgeProtocol.dappApprovalChanged:
+        setBridgeApproved(data?.isDappApproved);
+        if (data?.isDappApproved) {
+          showConnectionSuccessfulToast();
+        } else {
+          showWarningToast();
+        }
+        break;
+      default:
+        console.warn('Unhandled bridge message', data);
     }
   };
 
@@ -179,9 +122,9 @@ const WalletBridge = () => {
     <div className="hidden">
       {chainConnection && (
         <DappWalletBridge
+          bridgeHref={bridgeHref}
           onBridgeMessage={onBridgeMessage}
           onBridgeReady={onBridgeReady}
-          onBridgeLocated={onBridgeLocated}
           onError={onError}
           address={chainConnection.address}
           chainId={chainConnection.chainId}

@@ -16,7 +16,7 @@ import {
   instanceIdsAtom,
   chainConnectionAtom,
   bridgeApprovedAtom,
-  walletUiUrlAtom,
+  walletUiHrefAtom,
 } from 'store/app';
 import { instanceIdAtom } from 'store/swap';
 import {
@@ -52,7 +52,7 @@ const Swap = () => {
   const fromPurse = useAtomValue(fromPurseAtom);
   const toPurse = useAtomValue(toPurseAtom);
   const instanceIds = useAtomValue(instanceIdsAtom);
-  const walletUiUrl = useAtomValue(walletUiUrlAtom);
+  const walletUiHref = useAtomValue(walletUiHrefAtom);
 
   const anchorPetnames = [...instanceIds.keys()];
   const areAnchorsLoaded =
@@ -107,11 +107,11 @@ const Swap = () => {
           Swap offer sent to{' '}
           <a
             className="underline text-blue-500"
-            href={walletUiUrl}
+            href={walletUiHref}
             target="_blank"
             rel="noreferrer"
           >
-            {walletUiUrl}
+            {walletUiHref}
           </a>{' '}
           for appproval.
         </p>,
@@ -123,18 +123,18 @@ const Swap = () => {
           A problem occurred when sending the swap offer to{' '}
           <a
             className="underline text-blue-500"
-            href={walletUiUrl}
+            href={walletUiHref}
             target="_blank"
             rel="noreferrer"
           >
-            {walletUiUrl}
+            {walletUiHref}
           </a>
           .
         </p>
       );
     }
   }, [
-    walletUiUrl,
+    walletUiHref,
     setSwapped,
     swapped,
     addError,

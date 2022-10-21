@@ -3,6 +3,7 @@
 declare module '@agoric/web-components' {
   export const makeAgoricKeplrConnection;
   export const AgoricKeplrConnectionErrors;
+  export const BridgeProtocol;
 }
 
 declare module '@agoric/web-components/react' {
