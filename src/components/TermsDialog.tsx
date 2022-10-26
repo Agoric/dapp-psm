@@ -62,29 +62,26 @@ const TermsDialog = ({
                   Disclaimer
                 </Dialog.Title>
                 <div className="mt-2 max-h-96 overflow-y-auto">
-                  <p className="text-sm text-gray-500 pb-2">
-                    Inter Protocol is a fully decentralized stable token
-                    protocol. No representation or warranty is made concerning
-                    any aspect of the Inter Protocol, including its suitability,
-                    quality, availability, accessibility, accuracy or safety. As
-                    more fully explained in the Terms of Use (available here)
-                    and the Risk Statement (available here), your access to and
-                    use of the Inter Protocol is entirely at your own risk and
-                    could lead to substantial losses. You take full
-                    responsibility for your use of the Inter Protocol, and
-                    acknowledge that you use it on the basis of your own
-                    enquiry, without solicitation or inducement by Contributors
-                    (as defined in the Terms of Use). 
-                  </p>
                   <label className="pl-1 cursor-pointer">
                     <input
                       type="checkbox"
-                      className="accent-purple-500 cursor-pointer"
+                      className="accent-purple-500 cursor-pointer mr-2"
                       checked={isChecked}
                       onClick={() => setIsChecked(isChecked => !isChecked)}
                     />
-                    &nbsp;&nbsp;I understand the risks and would like to
-                    proceed.
+                    <span>
+                      By ticking the box and hitting &apos;Proceed&apos; you are
+                      agreeing to the terms as described{' '}
+                      {/* FIXME: USE CORRECT TOS LINK */}
+                      <a
+                        className="text-blue-500 hover:text-blue-700"
+                        target="inter_psm_tos"
+                        href="https://agoric.com"
+                      >
+                        here
+                      </a>
+                      .
+                    </span>
                   </label>
                 </div>
 
