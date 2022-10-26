@@ -17,11 +17,11 @@ import {
   metricsIndexAtom,
   chainConnectionAtom,
   networkConfigAtom,
-  termsAgreedAtom,
+  termsIndexAgreedUponAtom,
 } from 'store/app';
 import { watchContract, watchPurses } from 'utils/updates';
 import NetworkDropdown from 'components/NetworkDropdown';
-import TermsDialog, { currentTerms } from './TermsDialog';
+import TermsDialog, { currentTermsIndex } from './TermsDialog';
 
 import 'styles/globals.css';
 import clsx from 'clsx';
@@ -36,9 +36,9 @@ const ChainConnection = () => {
   const setGovernedParamsIndex = useSetAtom(governedParamsIndexAtom);
   const setInstanceIds = useSetAtom(instanceIdsAtom);
   const networkConfig = useAtomValue(networkConfigAtom);
-  const termsAgreed = useAtomValue(termsAgreedAtom);
+  const termsAgreed = useAtomValue(termsIndexAgreedUponAtom);
   const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
-  const areLatestTermsAgreed = termsAgreed === currentTerms;
+  const areLatestTermsAgreed = termsAgreed === currentTermsIndex;
 
   const handleTermsDialogClose = () => {
     setIsTermsDialogOpen(false);

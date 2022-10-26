@@ -1,11 +1,11 @@
 import { Dialog, Transition } from '@headlessui/react';
 import clsx from 'clsx';
 import { Fragment, useState } from 'react';
-import { termsAgreedAtom } from 'store/app';
+import { termsIndexAgreedUponAtom } from 'store/app';
 import { useSetAtom } from 'jotai';
 
 // Increment every time the current terms change.
-export const currentTerms = 0;
+export const currentTermsIndex = 0;
 
 const TermsDialog = ({
   isOpen,
@@ -14,11 +14,11 @@ const TermsDialog = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
-  const setTermsAgreed = useSetAtom(termsAgreedAtom);
+  const setTermsAgreed = useSetAtom(termsIndexAgreedUponAtom);
   const [isChecked, setIsChecked] = useState(false);
 
   const proceed = () => {
-    setTermsAgreed(currentTerms);
+    setTermsAgreed(currentTermsIndex);
     onClose();
   };
 
