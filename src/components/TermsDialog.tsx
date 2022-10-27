@@ -61,8 +61,8 @@ const TermsDialog = ({
                 >
                   Disclaimer
                 </Dialog.Title>
-                <div className="mt-2 max-h-96 overflow-y-auto">
-                  <label className="pl-1 cursor-pointer">
+                <div className="mt-2 p-1 max-h-96 overflow-y-auto">
+                  <label className="cursor-pointer">
                     <input
                       type="checkbox"
                       className="accent-purple-500 cursor-pointer mr-2"
@@ -70,15 +70,14 @@ const TermsDialog = ({
                       onClick={() => setIsChecked(isChecked => !isChecked)}
                     />
                     <span>
-                      By ticking the box and hitting &apos;Proceed&apos; you are
-                      agreeing to the terms as described{' '}
-                      {/* FIXME: USE CORRECT TOS LINK */}
+                      By clicking here you are indicating that you have read and
+                      agree to our{' '}
                       <a
                         className="text-blue-500 hover:text-blue-700"
-                        target="inter_psm_tos"
-                        href="https://agoric.com"
+                        target="inter_psm_disclaimer"
+                        href="https://docs.inter.trade/disclaimer"
                       >
-                        here
+                        Disclaimer
                       </a>
                       .
                     </span>
