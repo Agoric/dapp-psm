@@ -8,8 +8,10 @@ import ChainConnection from 'components/ChainConnection';
 import { INTER_LOGO } from 'assets/assets';
 
 import 'styles/globals.css';
+import Prerequisites, { hasPrerequisites } from 'Prerequisites';
 
 const App = () => {
+  if (!hasPrerequisites()) return <Prerequisites />;
   return (
     <>
       <ToastContainer
