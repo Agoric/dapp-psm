@@ -1,5 +1,6 @@
 import { useAtom } from 'jotai';
 import { FiX } from 'react-icons/fi';
+import { GrAnnounce } from 'react-icons/gr';
 import { motion, AnimatePresence } from 'framer-motion';
 import { bannerIndexDismissedAtom } from 'store/app';
 
@@ -29,6 +30,9 @@ const AnnouncementBanner = () => {
           <motion.div className="mx-auto max-w-7xl py-3 px-3 sm:px-6 lg:px-8">
             <motion.div className="flex flex-wrap items-center justify-between">
               <motion.div className="flex w-0 flex-1 items-center">
+                <span className="flex rounded-lgp-2">
+                  <GrAnnounce className="h-6 w-6" aria-hidden="true" />
+                </span>
                 <p className="ml-3 font-medium text-black">
                   Thanks for your interest in the PSM launch!{' '}
                   <a
