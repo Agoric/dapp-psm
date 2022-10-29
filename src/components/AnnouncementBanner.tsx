@@ -25,7 +25,7 @@ const AnnouncementBanner = () => {
             open: { height: 'auto' },
             collapsed: { height: 0 },
           }}
-          className="bg-amber-400 overflow-hidden"
+          className="bg-yellow-400 overflow-hidden"
         >
           <motion.div className="mx-auto max-w-7xl py-3 px-3 sm:px-6 lg:px-8">
             <motion.div className="flex flex-wrap items-center justify-between">
