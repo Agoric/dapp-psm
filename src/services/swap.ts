@@ -3,6 +3,11 @@ import type { WalletBridge } from 'store/app';
 import { E } from '@endo/eventual-send';
 import { SwapDirection } from 'store/swap';
 import { AmountMath } from '@agoric/ertp';
+import { loadNetworkConfig } from 'utils/networkConfig';
+import { makeImportContext } from '@agoric/smart-wallet/src/marshal-contexts';
+import { AgoricChainStoragePathKind, makeAgoricChainStorageWatcher } from '@agoric/rpc';
+import { makeAgoricWalletConnection } from '@agoric/web-components';
+import { makeCopyBag } from '@agoric/store';
 
 type SwapContext = {
   wallet: WalletBridge;
@@ -25,26 +30,49 @@ export const makeSwapOffer = async ({
   swapDirection,
   marshal,
 }: SwapContext) => {
-  const method =
-    swapDirection === SwapDirection.WantMinted
-      ? 'makeWantMintedInvitation'
-      : 'makeGiveMintedInvitation';
+  const rpc = "https://devnet.rpc.agoric.net:443"
+  const chainName = "agoricdev-20"
+  const context = makeImportContext().fromBoard;
+  const watcher = makeAgoricChainStorageWatcher(
+    rpc,
+    chainName,
+    context.unserialize
+  );
 
-  const [serializedInstance, serializedIn, serializedOut] = await Promise.all([
-    E(marshal).serialize(instanceId),
-    E(marshal).serialize(AmountMath.make(fromPurse.brand, fromValue)),
-    E(marshal).serialize(AmountMath.make(toPurse.brand, toValue)),
-  ]);
+  const brands = await new Promise(res => {
+    watcher.watchLatest<string>(
+      [AgoricChainStoragePathKind.Data, 'published.agoricNames.brand'],
+      value => res(value),
+    );
+  });
+
+  const instances = await new Promise(res => {
+    watcher.watchLatest<string>(
+      [AgoricChainStoragePathKind.Data, 'published.agoricNames.instance'],
+      value => res(value),
+    );
+  });
+  
+  
+  const placeBrand = brands[11][1]
+  const gameInstance = instances[17][1]
+
+  console.log("BRAND", placeBrand)
+  console.log("Instance", gameInstance)
+
+  try {
+    const [serializedInstance, serializedOut] = await Promise.all([
+      E(context).serialize(gameInstance),
+      E(context).serialize(AmountMath.make(placeBrand, makeCopyBag([["foo", 1n]]))),
+    ]);
+
+    console.log("HIT:")
 
   const offerConfig = {
-    publicInvitationMaker: method,
+    publicInvitationMaker: "method",
     instanceHandle: serializedInstance,
     proposalTemplate: {
-      give: {
-        In: {
-          amount: serializedIn,
-        },
-      },
+      give: {},
       want: {
         Out: {
           amount: serializedOut,
@@ -55,4 +83,8 @@ export const makeSwapOffer = async ({
 
   console.info('OFFER CONFIG: ', offerConfig);
   wallet.addOffer(offerConfig);
-};
+  } catch (e) {
+    console.log("ERROR")
+    console.log(e)
+  }
+}
