@@ -8,8 +8,6 @@ import { provisionSmartWallet } from 'services/wallet';
 // Increment every time the current terms change.
 export const currentTermsIndex = 1;
 
-export type SwingsetParams = { foo: string };
-
 const feeDenom = 10n ** 6n;
 
 const ProvisionSmartWalletDialog = ({
@@ -67,15 +65,13 @@ const ProvisionSmartWalletDialog = ({
                 </Dialog.Title>
                 <div className="mt-2 p-1 max-h-96 overflow-y-auto">
                   To interact with contracts on the Agoric chain, a smart wallet
-                  must be created for your account. As an anti-spam measure, a
-                  fee{' '}
+                  must be created for your account. As an anti-spam measure, you
+                  will need{' '}
                   {smartWalletFeeForDisplay && (
-                    <span>
-                      of <b>{smartWalletFeeForDisplay}</b>
-                    </span>
+                    <b>{smartWalletFeeForDisplay}</b>
                   )}{' '}
-                  will be deposited to the community fund upon smart wallet
-                  creation.
+                  to fund its provision which will be deposited to the community
+                  fund.
                 </div>
                 <div className="mt-4 float-right">
                   <button
