@@ -1,18 +1,19 @@
-import { useAtom } from 'jotai';
 import { FiX } from 'react-icons/fi';
 import { GrAnnounce } from 'react-icons/gr';
 import { motion, AnimatePresence } from 'framer-motion';
-import { bannerIndexDismissedAtom } from 'store/app';
+import { useState } from 'react';
+import { activeNotices } from 'utils/networkConfig';
+import { useAtomValue } from 'jotai';
+import { networkConfigPAtom } from 'store/app';
+import { loadable } from 'jotai/utils';
 
-// UPDATE WHENEVER COMPONENT IS MODIFIED.
-export const currentBannerIndex = 3;
-
-const AnnouncementBanner = () => {
-  const [bannerIndexDismissed, setBannerIndexDismissed] = useAtom(
-    bannerIndexDismissedAtom
-  );
-
-  const isVisible = currentBannerIndex > bannerIndexDismissed;
+const NoticeBanner = () => {
+  const [isDismissed, setIsDismissed] = useState(false);
+  const config = useAtomValue(loadable(networkConfigPAtom));
+  const bannerContent =
+    config.state === 'hasData' && activeNotices(config.data).join(' • ');
+  const isVisible =
+    !isDismissed && bannerContent && bannerContent.trim().length;
 
   return (
     <AnimatePresence initial={false}>
@@ -33,15 +34,11 @@ const AnnouncementBanner = () => {
                 <span className="flex rounded-lgp-2">
                   <GrAnnounce className="h-6 w-6" aria-hidden="true" />
                 </span>
-                <p className="ml-3 font-medium text-black">
-                  Note: A chain upgrade is planned to take place on Monday June
-                  19th 2023 at approximately 17:00 UTC. The PSM will not be
-                  functional during this time.
-                </p>
+                <p className="ml-3 font-medium text-black">{bannerContent}</p>
               </motion.div>
               <motion.div className="order-2 flex-shrink-0 sm:order-3 sm:ml-3">
                 <button
-                  onClick={() => setBannerIndexDismissed(currentBannerIndex)}
+                  onClick={() => setIsDismissed(true)}
                   type="button"
                   className="-mr-1 flex rounded-md p-2 hover:bg-black hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-white sm:-mr-2"
                 >
@@ -56,4 +53,4 @@ const AnnouncementBanner = () => {
   );
 };
 
-export default AnnouncementBanner;
+export default NoticeBanner;
