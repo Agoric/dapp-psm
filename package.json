@@ -46,7 +46,7 @@
     "happy-dom": "^10.7.0",
     "jotai": "^1.8.0",
     "lodash-es": "4.17.21",
-    "postcss": "^8.4.16",
+    "postcss": "^8.4.31",
     "prettier": "^2.7.1",
     "react-icons": "^4.4.0",
     "react-loader-spinner": "^5.2.0",
