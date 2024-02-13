@@ -34,7 +34,7 @@ To display a notice banner in the app, in the network-config (e.g. https://main.
     {
       "start": "2020-01-01",
       "end": "2040-01-01",
-      "message": "Hello world",
+      "message": "Hello world"
     }
   ]
 ...
