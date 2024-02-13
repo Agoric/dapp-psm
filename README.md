@@ -37,6 +37,5 @@ To display a notice banner in the app, in the network-config (e.g. https://main.
       "message": "Hello world"
     }
   ]
-...
 }
 ```
