@@ -129,7 +129,7 @@ export const watchPurses = async (
       console.warn('no purses from notifier');
       continue;
     }
-
+    console.log('NEW PURSES');
     setPurses(purses);
 
     for (const purse of purses as PursesJSONState[]) {
