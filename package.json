@@ -10,7 +10,9 @@
     "lint": "eslint src",
     "format": "prettier --write . && yarn lint --fix",
     "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "test:e2e": "EXTENSION=keplr synpress run --configFile=tests/e2e/synpress.config.cjs",
+    "test:e2e:ci": "start-server-and-test 'yarn dev' http-get://localhost:5173 'yarn test:e2e'"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -19,15 +21,16 @@
   "devDependencies": {
     "@agoric/cosmic-proto": "^0.3.0",
     "@agoric/ertp": "^0.16.2",
-    "@agoric/rpc": "^0.7.2",
+    "@agoric/rpc": "^0.9.0",
     "@agoric/smart-wallet": "^0.5.3",
+    "@agoric/synpress": "^3.7.2-beta.12",
     "@agoric/ui-components": "^0.9.0",
-    "@agoric/web-components": "^0.13.2",
+    "@agoric/web-components": "^0.15.0",
     "@agoric/zoe": "^0.26.2",
     "@endo/eventual-send": "^1.1.2",
-    "@endo/init": "^1.0.4",
-    "@endo/lockdown": "^1.0.4",
     "@headlessui/react": "^1.6.6",
+    "@keplr-wallet/types": "^0.12.74",
+    "@leapwallet/elements": "0.12.1",
     "@types/lodash-es": "^4.17.7",
     "@types/node": "^18.7.13",
     "@types/react": "^18.0.17",
@@ -36,6 +39,7 @@
     "@typescript-eslint/parser": "^5.35.1",
     "@vitejs/plugin-react": "^2.0.1",
     "autoprefixer": "^10.4.8",
+    "buffer": "^6.0.3",
     "clsx": "^1.2.1",
     "eslint": "^8.22.0",
     "eslint-plugin-import": "^2.26.0",
@@ -51,11 +55,13 @@
     "react-icons": "^4.4.0",
     "react-loader-spinner": "~5.4.5",
     "react-toastify": "^9.0.8",
+    "start-server-and-test": "^2.0.3",
+    "ses": "^1.3.0",
     "tailwindcss": "^3.1.8",
     "typescript": "^4.6.4",
-    "vite": "^3.2.7",
+    "vite": "^5.1.6",
     "vite-tsconfig-paths": "^3.5.0",
-    "vitest": "^0.23.4"
+    "vitest": "^1.4.0"
   },
   "resolutions": {
     "**/@agoric/xsnap": "0.14.3-dev-9f085d3.0",
