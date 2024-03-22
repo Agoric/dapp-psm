@@ -1,111 +1,125 @@
-import { Dialog, Transition } from '@headlessui/react';
-import clsx from 'clsx';
-import { Fragment } from 'react';
-import { chainConnectionAtom, provisionToastIdAtom } from 'store/app';
-import { useAtomValue, useSetAtom } from 'jotai';
-import { provisionSmartWallet } from 'services/wallet';
+import { useAtomValue } from 'jotai';
+import { useEffect, useState } from 'react';
+import { querySwingsetParams } from 'utils/swingsetParams';
+import { displayFunctionsAtom, pursesAtom, rpcNodeAtom } from 'store/app';
+import ActionsDialog from './ActionsDialog';
+import LeapLiquidityModal, { Direction } from './LiquidityModal';
 
-// Increment every time the current terms change.
-export const currentTermsIndex = 1;
+const useSmartWalletFeeQuery = (rpc?: string) => {
+  const [smartWalletFee, setFee] = useState<{
+    fee: bigint;
+    feeUnit: bigint;
+  } | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
-const feeDenom = 10n ** 6n;
+  useEffect(() => {
+    const fetchParams = async () => {
+      assert(rpc);
+      try {
+        const params = await querySwingsetParams(rpc);
+        console.debug('swingset params', params);
+        const beansPerSmartWallet = params.params.beansPerUnit.find(
+          ({ key }: { key: string }) => key === 'smartWalletProvision'
+        )?.beans;
+        const feeUnit = params.params.beansPerUnit.find(
+          ({ key }: { key: string }) => key === 'feeUnit'
+        )?.beans;
+        assert(feeUnit);
+        setFee({ fee: BigInt(beansPerSmartWallet), feeUnit: BigInt(feeUnit) });
+      } catch (e) {
+        setError(e as Error);
+      }
+    };
 
-const ProvisionSmartWalletDialog = ({
-  isOpen,
-  onClose,
-  smartWalletFee,
-}: {
+    if (rpc) {
+      fetchParams();
+    }
+  }, [rpc]);
+
+  return { smartWalletFee, error };
+};
+
+type Props = {
+  onConfirm: () => void;
   isOpen: boolean;
   onClose: () => void;
-  smartWalletFee: bigint | null;
-}) => {
-  const chainConnection = useAtomValue(chainConnectionAtom);
-  const setProvisionToastId = useSetAtom(provisionToastIdAtom);
+};
+
+const ProvisionSmartWalletNoticeDialog = ({
+  onConfirm,
+  isOpen,
+  onClose,
+}: Props) => {
+  const rpc = useAtomValue(rpcNodeAtom);
+  const { smartWalletFee, error: _smartWalletFeeError } =
+    useSmartWalletFeeQuery(rpc);
+
   const smartWalletFeeForDisplay = smartWalletFee
-    ? smartWalletFee / feeDenom + ' BLD'
+    ? String(smartWalletFee.fee / smartWalletFee.feeUnit) + ' IST'
     : null;
 
-  const provision = () => {
-    assert(chainConnection);
-    provisionSmartWallet(chainConnection, setProvisionToastId);
-    onClose();
-  };
+  const purses = useAtomValue(pursesAtom);
+  const istPurse = purses?.find(p => p.brandPetname === 'IST');
+  const { displayAmount, getDecimalPlaces } =
+    useAtomValue(displayFunctionsAtom) ?? {};
+
+  const body = (
+    <>
+      <div>
+        To interact with contracts on the Agoric chain, a smart wallet must be
+        created for your account. You will need{' '}
+        {smartWalletFeeForDisplay && <b>{smartWalletFeeForDisplay}</b>} to fund
+        its provision which will be deposited into the reserve pool. Click
+        &quot;Proceed&quot; to provision wallet and submit transaction.
+      </div>
+      <div className="my-4 flex justify-center gap-4">
+        {istPurse && displayAmount && (
+          <div className="flex items-center">
+            <span>
+              IST Balance: <b>{displayAmount(istPurse.currentAmount)}</b>
+            </span>
+          </div>
+        )}
+        {istPurse && (
+          <LeapLiquidityModal
+            selectedAsset={istPurse.brand}
+            direction={Direction.deposit}
+          />
+        )}
+      </div>
+    </>
+  );
+  const istDecimals =
+    istPurse && getDecimalPlaces && getDecimalPlaces(istPurse.brand);
+
+  // "feeUnit" is observed to be 1000000000000n, so when "fee" is 1000000000000n
+  // that means 1 IST (after dividing "fee" by "feeUnit"). To convert to uIST,
+  // we then multiply by 10^6.
+  const denominatedSmartWalletFee =
+    istDecimals &&
+    smartWalletFee &&
+    (smartWalletFee.fee / smartWalletFee.feeUnit) * 10n ** BigInt(istDecimals);
+
+  const hasRequiredFee =
+    denominatedSmartWalletFee &&
+    istPurse !== undefined &&
+    istPurse.currentAmount.value >= denominatedSmartWalletFee;
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black bg-opacity-25" />
-        </Transition.Child>
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <Dialog.Title
-                  as="h3"
-                  className="text-lg font-medium leading-6 text-gray-900"
-                >
-                  Smart Wallet Required
-                </Dialog.Title>
-                <div className="mt-2 p-1 max-h-96 overflow-y-auto">
-                  To interact with contracts on the Agoric chain, a smart wallet
-                  must be created for your account. As an anti-spam measure, you
-                  will need{' '}
-                  {smartWalletFeeForDisplay && (
-                    <b>{smartWalletFeeForDisplay}</b>
-                  )}{' '}
-                  to fund its provision which will be deposited to the community
-                  fund.
-                </div>
-                <div className="mt-4 float-right">
-                  <button
-                    type="button"
-                    className={clsx(
-                      'inline-flex justify-center rounded-md border border-transparent',
-                      'px-4 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2',
-                      'focus-visible:ring-purple-500 focus-visible:ring-offset-2',
-                      'bg-gray-100 text-gray-500 hover:bg-gray-200 mx-4'
-                    )}
-                    onClick={onClose}
-                  >
-                    Back to App
-                  </button>
-                  <button
-                    type="button"
-                    className={clsx(
-                      'inline-flex justify-center rounded-md border border-transparent',
-                      'px-4 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2',
-                      'focus-visible:ring-purple-500 focus-visible:ring-offset-2',
-                      'bg-purple-100 text-purple-900 hover:bg-purple-200'
-                    )}
-                    onClick={provision}
-                  >
-                    Provision Now
-                  </button>
-                </div>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
-        </div>
-      </Dialog>
-    </Transition>
+    <ActionsDialog
+      body={body}
+      isOpen={isOpen}
+      title="Smart Wallet Required"
+      primaryAction={{ label: 'Proceed', action: onConfirm }}
+      secondaryAction={{
+        label: 'Go Back',
+        action: onClose,
+      }}
+      onClose={onClose}
+      initialFocusPrimary={true}
+      primaryActionDisabled={!hasRequiredFee}
+    />
   );
 };
 
-export default ProvisionSmartWalletDialog;
+export default ProvisionSmartWalletNoticeDialog;
