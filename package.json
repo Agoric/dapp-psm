@@ -12,7 +12,7 @@
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "test:e2e": "EXTENSION=keplr SKIP_EXTENSION_SETUP=true synpress run --configFile=tests/e2e/synpress.config.cjs",
-    "test:e2e:ci": "start-server-and-test 'yarn dev' http-get://localhost:5173 'yarn test:e2e'"
+    "test:e2e:ci": "yarn dev & sleep 10 && yarn test:e2e"
   },
   "dependencies": {
     "react": "^18.2.0",
