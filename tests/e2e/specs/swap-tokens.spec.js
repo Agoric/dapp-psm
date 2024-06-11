@@ -25,26 +25,10 @@ describe('Swap Tokens Tests', () => {
         selectedChains: ['Agoric'],
       });
 
-      cy.getWalletAddress('Agoric').then(
-        address => (walletAddress.value = address)
-      );
-
-      // Provision IST for wallet
-      cy.origin(
-        'https://emerynet.faucet.agoric.net',
-        { args: { walletAddress, DEFAULT_TIMEOUT } },
-        ({ walletAddress, DEFAULT_TIMEOUT }) => {
-          cy.visit('/');
-          cy.get('[id="address"]').first().type(walletAddress.value);
-          cy.get('[type="radio"][value="client"]').click();
-          cy.get('[name="clientType"]').select('REMOTE_WALLET');
-
-          cy.get('[type="submit"]').first().click();
-          cy.get('body')
-            .contains('success', { timeout: DEFAULT_TIMEOUT })
-            .should('exist');
-        }
-      );
+      cy.getWalletAddress('Agoric').then(address => {
+        // provision IST
+        cy.provisionFromFaucet(address, 'client', 'REMOTE_WALLET');
+      });
     }
   });
 
