@@ -57,8 +57,8 @@ jobs:
           docker-compose -f tests/e2e/docker-compose.yml --profile $SYNPRESS_PROFILE  up --build --exit-code-from synpress
         env:
           # conditionals based on github event
-          SYNPRESS_PROFILE: ${{ 'true' == 'true' && 'daily-tests' || 'synpress' }}
-          CYPRESS_AGORIC_NET: ${{ 'true' == 'true' && 'emerynet' || 'local' }}
+          SYNPRESS_PROFILE: ${{ env.IS_EMERYNET_TEST == 'true' && 'daily-tests' || 'synpress' }}
+          CYPRESS_AGORIC_NET: ${{ env.IS_EMERYNET_TEST == 'true' && 'emerynet' || 'local' }}
           # for docker-compose.yml
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
