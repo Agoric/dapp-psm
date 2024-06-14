@@ -17,7 +17,9 @@ describe('Swap Tokens Tests', () => {
         secretWords: customWalletPhrase,
       });
     } else if (networkPhrases.isLocal) {
-      cy.setupWallet();
+      cy.setupWallet({
+        privateKey: 'b3209e3771c0d97434ed4f9d6c223a442d1241968fd1f1b0e03e755b92339069',
+      });
     } else {
       cy.setupWallet({
         createNewWallet: true,
