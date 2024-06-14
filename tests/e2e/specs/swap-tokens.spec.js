@@ -5,9 +5,6 @@ describe('Swap Tokens Tests', () => {
   const limitFloat = float => parseFloat(float.toFixed(5));
   const amountToSwap = 0.001;
   const transactionFee = 0.2;
-  const walletAddress = {
-    value: null,
-  };
   const networkPhrases = phrasesList[Cypress.env('AGORIC_NET')];
   const customWalletPhrase = Cypress.env('MNEMONIC_PHRASE');
 
@@ -17,7 +14,10 @@ describe('Swap Tokens Tests', () => {
         secretWords: customWalletPhrase,
       });
     } else if (networkPhrases.isLocal) {
-      cy.setupWallet();
+      cy.setupWallet({
+        privateKey:
+          'b3209e3771c0d97434ed4f9d6c223a442d1241968fd1f1b0e03e755b92339069',
+      });
     } else {
       cy.setupWallet({
         createNewWallet: true,
