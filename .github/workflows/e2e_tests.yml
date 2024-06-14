@@ -20,7 +20,7 @@ on:
       phrase:
         description: 'The mnemonic phrase for the account to use in testing'
         required: false
-        type: text
+        type: string
 
 concurrency:
   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label ||
