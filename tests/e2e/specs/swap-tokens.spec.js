@@ -82,6 +82,7 @@ describe('Swap Tokens Tests', () => {
       .contains('Swap Completed', { timeout: DEFAULT_TIMEOUT })
       .should('be.visible');
 
+    cy.wait(5000);
     cy.getTokenAmount('IST').then(amount =>
       expect(amount).to.be.oneOf([
         limitFloat(istBalance - amountToSwap - provisionFee),
@@ -113,6 +114,7 @@ describe('Swap Tokens Tests', () => {
       .contains('Swap Completed', { timeout: DEFAULT_TIMEOUT })
       .should('be.visible');
 
+    cy.wait(5000);
     cy.getTokenAmount('IST').then(amount =>
       expect(amount).to.be.oneOf([
         limitFloat(ISTbalance + amountToSwap),
