@@ -6,6 +6,14 @@ export const phrasesList = {
     psmNetwork: 'Agoric Emerynet',
     token: 'ToyUSD',
     isLocal: false,
+    faucetUrl: 'https://emerynet.faucet.agoric.net/go',
+  },
+  devnet: {
+    walletButton: 'li[data-value="devnet"]',
+    psmNetwork: 'Agoric Devnet',
+    token: 'USDC_axl',
+    isLocal: false,
+    faucetUrl: 'https://devnet.faucet.agoric.net/go',
   },
   local: {
     walletButton: 'li[data-value="local"]',
@@ -14,8 +22,6 @@ export const phrasesList = {
     isLocal: true,
   },
 };
-
-export const FACUET_URL = 'https://emerynet.faucet.agoric.net/go';
 
 export const FACUET_HEADERS = {
   Accept:
