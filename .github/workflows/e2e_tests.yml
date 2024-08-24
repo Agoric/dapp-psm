@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types:
+      - labeled
+      - synchronize
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
@@ -17,6 +20,7 @@ on:
         options:
           - local
           - emerynet
+          - devnet
       phrase:
         description: 'The mnemonic phrase for the account to use in testing'
         required: false
@@ -32,9 +36,12 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IS_EMERYNET_TEST: ${{ github.event_name == 'schedule' || inputs.network == 'emerynet' }}
+      NETWORK: ${{ inputs.network || contains(github.event.pull_request.labels.*.name, 'emerynet') && 'emerynet' || contains(github.event.pull_request.labels.*.name, 'devnet') && 'devnet' || github.event_name == 'schedule' && 'emerynet' || 'local' }}
 
     steps:
+      - name: Print network name
+        run: echo "${{ env.NETWORK }}"
+
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -43,8 +50,8 @@ jobs:
           docker compose -f tests/e2e/docker-compose.yml --profile $SYNPRESS_PROFILE  up --build --exit-code-from synpress
         env:
           # conditionals based on github event
-          SYNPRESS_PROFILE: ${{ env.IS_EMERYNET_TEST == 'true' && 'daily-tests' || 'synpress' }}
-          CYPRESS_AGORIC_NET: ${{ env.IS_EMERYNET_TEST == 'true' && 'emerynet' || 'local' }}
+          SYNPRESS_PROFILE: ${{ env.NETWORK != 'local' && 'daily-tests' || 'synpress' }}
+          CYPRESS_AGORIC_NET: ${{ env.NETWORK }}
           # for docker-compose.yml
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1

@@ -1,12 +1,14 @@
 import '@agoric/synpress/support/index';
-import { FACUET_HEADERS, FACUET_URL, DEFAULT_TIMEOUT } from './utils';
+import { FACUET_HEADERS, phrasesList, DEFAULT_TIMEOUT } from './utils';
+
+const networkPhrases = phrasesList[Cypress.env('AGORIC_NET')];
 
 Cypress.Commands.add(
   'provisionFromFaucet',
   (walletAddress, command, clientType) => {
     cy.request({
       method: 'POST',
-      url: FACUET_URL,
+      url: networkPhrases.faucetUrl,
       body: {
         address: walletAddress,
         command,
