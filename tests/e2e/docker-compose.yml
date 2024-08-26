@@ -4,6 +4,7 @@ services:
   synpress:
     profiles:
       - synpress
+      - daily-tests
     container_name: synpress
     build: ../..
     environment:
@@ -34,24 +35,27 @@ services:
       - GITHUB_REF=${GITHUB_REF}
       - GITHUB_BASE_REF=${GITHUB_BASE_REF}
       - GITHUB_HEAD_REF=${GITHUB_HEAD_REF}
+      # Variables for dapp-psm
+      - CYPRESS_AGORIC_NET=${CYPRESS_AGORIC_NET}
       - SECRET_WORDS="orbit bench unit task food shock brand bracket domain regular warfare company announce wheel grape trust sphere boy doctor half guard ritual three ecology"
+      - CYPRESS_MNEMONIC_PHRASE=${CYPRESS_MNEMONIC_PHRASE}
     depends_on:
       - display
       - video
-      - agd
     entrypoint: []
     working_dir: /app
     volumes:
       - ./docker/videos:/app/tests/e2e/videos
       - ./docker/screenshots:/app/tests/e2e/screenshots
     command: >
-      bash -c 'echo -n "======> local noVNC URL: http://localhost:8080/vnc.html?autoconnect=true " && pnpm wait-on http://display:8080 && echo -n "======> remote noVNC URL: " && curl -s ngrok:4040/api/tunnels | jq -r .tunnels[0].public_url && nginx && yarn test:e2e:ci'
+      bash -c 'echo -n "======> local noVNC URL: http://localhost:8080/vnc.html?autoconnect=true " && pnpm wait-on http://display:8080 && echo -n "======> remote noVNC URL: " && curl -s ngrok:4040/api/tunnels | jq -r .tunnels[0].public_url && if [ "$CYPRESS_AGORIC_NET" == "local" ]; then nginx; fi && yarn test:e2e:ci'
     networks:
       - x11
 
   display:
     profiles:
       - synpress
+      - daily-tests
     container_name: display
     image: synthetixio/display:016121eafdfff448414894d0ca5a50b1d72b62eb-base
     environment:
@@ -82,6 +86,7 @@ services:
   video:
     profiles:
       - synpress
+      - daily-tests
     container_name: video
     image: synthetixio/video:457bb48776c3b14de232d9dda620ba9188dc40ac-base
     volumes:
@@ -99,7 +104,7 @@ services:
     profiles:
       - synpress
     container_name: agoric_chain
-    image: ghcr.io/agoric/agoric-3-proposals:main
+    image: ghcr.io/agoric/agoric-3-proposals:${A3P_IMAGE_TAG}
     logging:
       driver: none
     platform: linux/amd64

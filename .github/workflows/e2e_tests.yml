@@ -5,6 +5,30 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types:
+      - labeled
+      - synchronize
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      network:
+        description: 'Select the blockchain network for testing'
+        required: false
+        default: 'emerynet'
+        type: choice
+        options:
+          - local
+          - emerynet
+          - devnet
+      phrase:
+        description: 'The mnemonic phrase for the account to use in testing'
+        required: false
+        type: string
+      a3p_image_tag:
+        description: 'Docker image tag for the a3p chain to use in testing'
+        required: false
+        type: string
 
 concurrency:
   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label ||
@@ -15,28 +39,25 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
 
+    env:
+      NETWORK: ${{ inputs.network || contains(github.event.pull_request.labels.*.name, 'emerynet') && 'emerynet' || contains(github.event.pull_request.labels.*.name, 'devnet') && 'devnet' || github.event_name == 'schedule' && 'emerynet' || 'local' }}
+
     steps:
+      - name: Print network name
+        run: echo "${{ env.NETWORK }}"
+
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
       - name: Run e2e tests
         run: |
-          docker-compose -f tests/e2e/docker-compose.yml --profile synpress up --build --exit-code-from synpress
+          docker compose -f tests/e2e/docker-compose.yml --profile $SYNPRESS_PROFILE  up --build --exit-code-from synpress
         env:
+          # conditionals based on github event
+          SYNPRESS_PROFILE: ${{ env.NETWORK != 'local' && 'daily-tests' || 'synpress' }}
+          CYPRESS_AGORIC_NET: ${{ env.NETWORK }}
+          # for docker-compose.yml
+          A3P_IMAGE_TAG: ${{ inputs.a3p_image_tag  || 'latest'}}
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
@@ -46,6 +67,7 @@ jobs:
           ANVIL_FORK_URL: ${{ secrets.ANVIL_FORK_URL }}
           GH_PAT: ${{ secrets.GH_PAT }}
           GH_USERNAME: ${{ secrets.GH_USERNAME }}
+          CYPRESS_MNEMONIC_PHRASE: ${{ inputs.phrase }}
           # cypress dashboard
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
@@ -62,4 +84,13 @@ jobs:
             tests/e2e/docker/videos
             tests/e2e/docker/videos-ci
             tests/e2e/docker/screenshots
+        continue-on-error: true
+
+      - name: Notify About Failure
+        if: >
+          failure() && github.event_name != 'pull_request' &&
+          github.repository_owner == 'agoric'
+        uses: ./.github/actions/notify-status
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
         continue-on-error: true
