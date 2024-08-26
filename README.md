@@ -24,7 +24,7 @@ To deploy, push to that branch. e.g. if you've qualified main,
 git push origin main:beta
 ```
 
-## Testing
+## E2E Testing
 
 E2E tests have been written in order to test the dapp as well as to perform automated testing on emerynet/devnet when upgrading the chain
 
