@@ -24,7 +24,7 @@ on:
       phrase:
         description: 'The mnemonic phrase for the account to use in testing'
         required: false
-        type: string  
+        type: string
       a3p_image_tag:
         description: 'Docker image tag for the a3p chain to use in testing'
         required: false
