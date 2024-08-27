@@ -15,6 +15,13 @@ export const phrasesList = {
     isLocal: false,
     faucetUrl: 'https://devnet.faucet.agoric.net/go',
   },
+  xnet: {
+    walletButton: 'li[data-value="xnet"]',
+    psmNetwork: 'Agoric Xnet',
+    token: 'ToyUSD',
+    isLocal: false,
+    faucetUrl: 'https://xnet.faucet.agoric.net/go',
+  },
   local: {
     walletButton: 'li[data-value="local"]',
     psmNetwork: 'Local Network',
