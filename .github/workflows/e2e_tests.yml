@@ -21,6 +21,7 @@ on:
           - local
           - emerynet
           - devnet
+          - xnet
       phrase:
         description: 'The mnemonic phrase for the account to use in testing'
         required: false
@@ -40,7 +41,14 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NETWORK: ${{ inputs.network || contains(github.event.pull_request.labels.*.name, 'emerynet') && 'emerynet' || contains(github.event.pull_request.labels.*.name, 'devnet') && 'devnet' || github.event_name == 'schedule' && 'emerynet' || 'local' }}
+      NETWORK: >-
+        ${{ inputs.network 
+          || contains(github.event.pull_request.labels.*.name, 'emerynet') && 'emerynet'
+          || contains(github.event.pull_request.labels.*.name, 'devnet') && 'devnet'
+          || contains(github.event.pull_request.labels.*.name, 'xnet') && 'xnet'
+          || github.event_name == 'schedule' && 'emerynet' 
+          || 'local' 
+        }}
 
     steps:
       - name: Print network name
