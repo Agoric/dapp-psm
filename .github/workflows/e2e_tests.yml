@@ -41,14 +41,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NETWORK: >-
-        ${{ inputs.network 
-          || contains(github.event.pull_request.labels.*.name, 'emerynet') && 'emerynet'
-          || contains(github.event.pull_request.labels.*.name, 'devnet') && 'devnet'
-          || contains(github.event.pull_request.labels.*.name, 'xnet') && 'xnet'
-          || github.event_name == 'schedule' && 'emerynet' 
-          || 'local' 
-        }}
+      NETWORK: usman
 
     steps:
       - name: Print network name
