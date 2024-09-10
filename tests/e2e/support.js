@@ -10,13 +10,15 @@ Cypress.Commands.add(
       SUCCESSFUL: 1002,
     };
 
-    const getStatus = (txHash) =>
+    const getStatus = txHash =>
       cy
         .request({
           method: 'GET',
-          url: `https://${Cypress.env('AGORIC_NET')}.faucet.agoric.net/api/transaction-status/${txHash}`,
+          url: `https://${Cypress.env(
+            'AGORIC_NET'
+          )}.faucet.agoric.net/api/transaction-status/${txHash}`,
         })
-        .then((resp) => {
+        .then(resp => {
           const { transactionStatus } = resp.body;
           if (transactionStatus === TRANSACTION_STATUS.NOT_FOUND)
             // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -34,9 +36,10 @@ Cypress.Commands.add(
       headers: FACUET_HEADERS,
       method: 'POST',
       url: `https://${Cypress.env('AGORIC_NET')}.faucet.agoric.net/go`,
-    }).then((resp) =>
-      getStatus(/\/transaction-status\/(.*)/.exec(resp.headers.location)[1]),
-    )
-    .then((status) => expect(status).to.eq(TRANSACTION_STATUS.SUCCESSFUL));
+    })
+      .then(resp =>
+        getStatus(/\/transaction-status\/(.*)/.exec(resp.headers.location)[1])
+      )
+      .then(status => expect(status).to.eq(TRANSACTION_STATUS.SUCCESSFUL));
   }
 );
