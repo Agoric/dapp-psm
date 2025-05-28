@@ -4,7 +4,7 @@ export const phrasesList = {
   emerynet: {
     walletButton: 'li[data-value="testnet"]',
     psmNetwork: 'Agoric Emerynet',
-    token: 'ToyUSD',
+    token: 'USDC_axl',
     isLocal: false,
     faucetUrl: 'https://emerynet.faucet.agoric.net/go',
   },
@@ -14,6 +14,13 @@ export const phrasesList = {
     token: 'USDC_axl',
     isLocal: false,
     faucetUrl: 'https://devnet.faucet.agoric.net/go',
+  },
+  xnet: {
+    walletButton: 'li[data-value="xnet"]',
+    psmNetwork: 'Agoric Xnet',
+    token: 'ToyUSD',
+    isLocal: false,
+    faucetUrl: 'https://xnet.faucet.agoric.net/go',
   },
   local: {
     walletButton: 'li[data-value="local"]',

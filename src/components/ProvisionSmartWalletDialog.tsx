@@ -9,6 +9,7 @@ const useSmartWalletFeeQuery = (rpc?: string) => {
   const [smartWalletFee, setFee] = useState<{
     fee: bigint;
     feeUnit: bigint;
+    feeUnitName: string;
   } | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
@@ -24,8 +25,16 @@ const useSmartWalletFeeQuery = (rpc?: string) => {
         const feeUnit = params.params.beansPerUnit.find(
           ({ key }: { key: string }) => key === 'feeUnit'
         )?.beans;
-        assert(feeUnit);
-        setFee({ fee: BigInt(beansPerSmartWallet), feeUnit: BigInt(feeUnit) });
+        const feeUnitName = params.params?.feeUnitPrice[0]?.denom;
+        assert(
+          beansPerSmartWallet && feeUnit && feeUnitName,
+          'missing fee params'
+        );
+        setFee({
+          fee: BigInt(beansPerSmartWallet),
+          feeUnit: BigInt(feeUnit),
+          feeUnitName,
+        });
       } catch (e) {
         setError(e as Error);
       }
@@ -54,12 +63,20 @@ const ProvisionSmartWalletNoticeDialog = ({
   const { smartWalletFee, error: _smartWalletFeeError } =
     useSmartWalletFeeQuery(rpc);
 
+  const feeUnitNameForDisplay =
+    smartWalletFee?.feeUnitName === 'uist' ? 'IST' : 'BLD';
   const smartWalletFeeForDisplay = smartWalletFee
-    ? String(smartWalletFee.fee / smartWalletFee.feeUnit) + ' IST'
+    ? String(smartWalletFee.fee / smartWalletFee.feeUnit) +
+      ' ' +
+      feeUnitNameForDisplay
     : null;
 
   const purses = useAtomValue(pursesAtom);
   const istPurse = purses?.find(p => p.brandPetname === 'IST');
+  const bldPurse = purses?.find(p => p.brandPetname === 'BLD');
+  const purseToDisplay =
+    smartWalletFee?.feeUnitName === 'uist' ? istPurse : bldPurse;
+
   const { displayAmount, getDecimalPlaces } =
     useAtomValue(displayFunctionsAtom) ?? {};
 
@@ -73,37 +90,41 @@ const ProvisionSmartWalletNoticeDialog = ({
         &quot;Proceed&quot; to provision wallet and submit transaction.
       </div>
       <div className="my-4 flex justify-center gap-4">
-        {istPurse && displayAmount && (
+        {purseToDisplay && displayAmount && (
           <div className="flex items-center">
             <span>
-              IST Balance: <b>{displayAmount(istPurse.currentAmount)}</b>
+              {feeUnitNameForDisplay} Balance:{' '}
+              <b>{displayAmount(purseToDisplay.currentAmount)}</b>
             </span>
           </div>
         )}
-        {istPurse && (
+        {purseToDisplay && (
           <LeapLiquidityModal
-            selectedAsset={istPurse.brand}
+            selectedAsset={purseToDisplay.brand}
             direction={Direction.deposit}
           />
         )}
       </div>
     </>
   );
-  const istDecimals =
-    istPurse && getDecimalPlaces && getDecimalPlaces(istPurse.brand);
+  const decimalsToDisplay =
+    purseToDisplay &&
+    getDecimalPlaces &&
+    getDecimalPlaces(purseToDisplay.brand);
 
   // "feeUnit" is observed to be 1000000000000n, so when "fee" is 1000000000000n
   // that means 1 IST (after dividing "fee" by "feeUnit"). To convert to uIST,
   // we then multiply by 10^6.
   const denominatedSmartWalletFee =
-    istDecimals &&
+    decimalsToDisplay &&
     smartWalletFee &&
-    (smartWalletFee.fee / smartWalletFee.feeUnit) * 10n ** BigInt(istDecimals);
+    (smartWalletFee.fee / smartWalletFee.feeUnit) *
+      10n ** BigInt(decimalsToDisplay);
 
   const hasRequiredFee =
     denominatedSmartWalletFee &&
-    istPurse !== undefined &&
-    istPurse.currentAmount.value >= denominatedSmartWalletFee;
+    purseToDisplay !== undefined &&
+    purseToDisplay.currentAmount.value >= denominatedSmartWalletFee;
 
   return (
     <ActionsDialog

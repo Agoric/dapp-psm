@@ -1,24 +1,45 @@
 import '@agoric/synpress/support/index';
-import { FACUET_HEADERS, phrasesList, DEFAULT_TIMEOUT } from './utils';
-
-const networkPhrases = phrasesList[Cypress.env('AGORIC_NET')];
+import { FACUET_HEADERS } from './utils';
 
 Cypress.Commands.add(
   'provisionFromFaucet',
   (walletAddress, command, clientType) => {
+    const TRANSACTION_STATUS = {
+      FAILED: 1000,
+      NOT_FOUND: 1001,
+      SUCCESSFUL: 1002,
+    };
+
+    const getStatus = txHash =>
+      cy
+        .request({
+          method: 'GET',
+          url: `https://${Cypress.env(
+            'AGORIC_NET'
+          )}.faucet.agoric.net/api/transaction-status/${txHash}`,
+        })
+        .then(resp => {
+          const { transactionStatus } = resp.body;
+          if (transactionStatus === TRANSACTION_STATUS.NOT_FOUND)
+            // eslint-disable-next-line cypress/no-unnecessary-waiting
+            return cy.wait(2000).then(() => getStatus(txHash));
+          else return cy.wrap(transactionStatus);
+        });
+
     cy.request({
-      method: 'POST',
-      url: networkPhrases.faucetUrl,
       body: {
         address: walletAddress,
         command,
         clientType,
       },
+      followRedirect: false,
       headers: FACUET_HEADERS,
-      timeout: 4 * DEFAULT_TIMEOUT,
-      retryOnStatusCodeFailure: true,
-    }).then(resp => {
-      expect(resp.body).to.eq('success');
-    });
+      method: 'POST',
+      url: `https://${Cypress.env('AGORIC_NET')}.faucet.agoric.net/go`,
+    })
+      .then(resp =>
+        getStatus(/\/transaction-status\/(.*)/.exec(resp.headers.location)[1])
+      )
+      .then(status => expect(status).to.eq(TRANSACTION_STATUS.SUCCESSFUL));
   }
 );

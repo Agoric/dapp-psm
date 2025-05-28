@@ -87,6 +87,8 @@ describe('Swap Tokens Tests', () => {
       expect(amount).to.be.oneOf([
         limitFloat(istBalance - amountToSwap - provisionFee),
         limitFloat(istBalance - amountToSwap - provisionFee - transactionFee),
+        limitFloat(istBalance - amountToSwap), // If provision fee in IST is removed
+        limitFloat(istBalance - amountToSwap - transactionFee),
       ])
     );
   });

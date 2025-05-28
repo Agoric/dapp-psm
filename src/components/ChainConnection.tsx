@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { Oval } from 'react-loader-spinner';
 import {
   makeAgoricWalletConnection,
-  AgoricKeplrConnectionErrors as Errors,
+  Errors,
   suggestChain,
 } from '@agoric/web-components';
 import {
