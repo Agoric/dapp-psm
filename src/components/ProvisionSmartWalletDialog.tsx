@@ -9,7 +9,7 @@ const useSmartWalletFeeQuery = (rpc?: string) => {
   const [smartWalletFee, setFee] = useState<{
     fee: bigint;
     feeUnit: bigint;
-    feeUnitName?: string;
+    feeUnitName: string;
   } | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
@@ -26,7 +26,10 @@ const useSmartWalletFeeQuery = (rpc?: string) => {
           ({ key }: { key: string }) => key === 'feeUnit'
         )?.beans;
         const feeUnitName = params.params?.feeUnitPrice[0]?.denom;
-        assert(feeUnit);
+        assert(
+          beansPerSmartWallet && feeUnit && feeUnitName,
+          'missing fee params'
+        );
         setFee({
           fee: BigInt(beansPerSmartWallet),
           feeUnit: BigInt(feeUnit),

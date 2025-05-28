@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src",
+    "lint:types": "echo 'XXX tsc is not working, even though vite build is successful' && tsc --noEmit",
     "format": "prettier --write . && yarn lint --fix",
     "test": "vitest",
     "coverage": "vitest run --coverage",
